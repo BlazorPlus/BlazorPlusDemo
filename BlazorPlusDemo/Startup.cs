@@ -32,7 +32,9 @@ namespace BlazorPlusDemo
 
             //Install-BlazorPlus
             services.AddHttpContextAccessor();
-            services.AddScoped<BlazorPlus.BlazorSession>();
+            //services.AddScoped<BlazorPlus.BlazorSession>();
+            services.AddScoped<BlazorPlus.BlazorSession, WebCustomizeSession>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
