@@ -25,8 +25,17 @@ Welcome to your new app.
     {
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
-        await BlazorSession.Current.JSRuntime.InvokeVoidAsync("console.log", "ping");
-        BlazorSession.Current.Toast(sw.ElapsedMilliseconds.ToString() + " ms");
+
+        List<string> msgs = new List<string>();
+        for (int i = 0; i < 5; i++)
+        {
+            sw.Restart();
+            await BlazorSession.Current.JSRuntime.InvokeVoidAsync("console.log", "ping");
+            msgs.Add(sw.ElapsedMilliseconds.ToString() + " ms");
+            BlazorSession.Current.ToastClear();
+            BlazorSession.Current.Toast(string.Join("\r\n", msgs.ToArray()));
+        }
+        sw = null;
     }
 }
 
