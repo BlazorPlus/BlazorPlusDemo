@@ -3,6 +3,8 @@ ASP.NET Core Blazor Server Session,Navigation,Dialog,Container,Controls,Componen
 
 This is a demo project for https://github.com/BlazorPlus/BlazorPlus
 
-This project is testing internally
+
+More samples are prepairing
+
 
 ![Screenshot](https://github.com/BlazorPlus/BlazorPlusDemo/raw/master/demoscreenshots/s001.jpg)
