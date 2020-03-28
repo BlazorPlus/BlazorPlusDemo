@@ -1,5 +1,7 @@
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
+        @*Install-BlazorPlus*@
+        <BlazorContainer IsShared="true" />
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
     <NotFound>

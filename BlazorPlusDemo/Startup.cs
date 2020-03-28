@@ -29,6 +29,10 @@ namespace BlazorPlusDemo
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+
+            //Install-BlazorPlus
+            services.AddHttpContextAccessor();
+            services.AddScoped<BlazorPlus.BlazorSession>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,9 +56,13 @@ namespace BlazorPlusDemo
 
             app.UseEndpoints(endpoints =>
             {
+                //Install-BlazorPlus
+                endpoints.Map("/_blazorplus_handler", BlazorPlus.BlazorSession.ProcessRequestAsync);
+
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
     }
 }
+
