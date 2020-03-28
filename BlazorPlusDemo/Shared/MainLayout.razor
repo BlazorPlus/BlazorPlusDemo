@@ -6,10 +6,77 @@
 
 <div class="main">
     <div class="top-row px-4">
-        <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        <button @onclick="ShowCode">Show Code</button>
     </div>
 
     <div class="content px-4">
         @Body
     </div>
 </div>
+
+
+
+
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment whe
+
+
+
+
+@code
+{
+
+    void ShowCode()
+    {
+        string codename = BlazorSession.Current["codename"] as string;
+        if (codename == null)
+        {
+            BlazorSession.Current.Toast("miss codename");
+            return;
+        }
+        string filepath = System.IO.Path.Combine(whe.ContentRootPath, "Pages/" + codename + ".razor");
+        if (!System.IO.File.Exists(filepath))
+        {
+            BlazorSession.Current.Alert("Error", "Unable to find file " + codename + ".razor");
+            return;
+        }
+
+        string linkurl = "https://github.com/BlazorPlus/BlazorPlusDemo/blob/master/BlazorPlusDemo/Pages/" + codename + ".razor";
+
+        BlazorDialog dlg = null;
+        RenderFragment rf = __builder =>
+        {
+
+        <div style="display:flex;flex-direction:column;;width:80%;height:80%;background-color:white;padding:2px;border-radius:5px;box-shadow:#cccc 1px 1px 6px">
+            <style>
+                .mainlayout_span_close {
+                    font-size: 40px;
+                    width: 20px;
+                    height: 20px;
+                    line-height: 20px;
+                    margin: 3px;
+                    cursor: default;
+                }
+
+                    .mainlayout_span_close:hover {
+                        color: blue;
+                    }
+            </style>
+            <div style="display:flex;"><span style="flex:99">@codename</span><span class="mainlayout_span_close" @onclick="()=> { dlg.Close(); }">×</span></div>
+            <textarea style="resize:none;width:100%;flex:99;">@System.IO.File.ReadAllText(filepath)</textarea>
+            <div><a href="@linkurl" target="_blank">@linkurl</a></div>
+        </div>
+        };
+
+        Action<BlazorDialog> dlginit = argdlg =>
+        {
+            dlg = argdlg;
+            dlg.CancelHandler = delegate
+            {
+                dlg.Close();
+            };
+        };
+
+        BlazorSession.Current.ShowDialog(rf, dlginit);
+
+    }
+}

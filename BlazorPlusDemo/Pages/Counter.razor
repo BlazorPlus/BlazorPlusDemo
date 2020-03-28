@@ -1,5 +1,7 @@
 ﻿@page "/counter"
 
+@{ BlazorSession.Current["codename"] = "Counter"; }
+
 <h1>Counter</h1>
 
 <p>Current count: @currentCount</p>

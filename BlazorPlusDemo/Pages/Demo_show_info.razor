@@ -1,5 +1,7 @@
 ﻿@page "/demo_show_info"
 
+@{ BlazorSession.Current["codename"] = "Demo_show_info"; }
+
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
 
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment whe
@@ -8,141 +10,152 @@
 
 @inject NavigationManager navmgr
 
+@{
+    if (!hca.HttpContext.Request.Host.Host.EndsWith("blazorplus.com"))
+    {
+        <p>
+            This demo is not allowed by default.
+        </p>
+        return;
+    }
+}
+
+
 <style>
-	fieldset {
-		margin-bottom: 15px;
-	}
+    fieldset {
+        margin-bottom: 15px;
+    }
 
-		fieldset div {
-			padding-left: 20px;
-			white-space: nowrap;
-			max-width: 900px;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
+        fieldset div {
+            padding-left: 20px;
+            white-space: nowrap;
+            max-width: 900px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-	legend {
-		font-size: 1em;
-		font-weight: bold;
-		margin: 8px 0;
-	}
+    legend {
+        font-size: 1em;
+        font-weight: bold;
+        margin: 8px 0;
+    }
 
-	label {
-		display: inline-block;
-		width: 180px;
-		color: navy;
-	}
+    label {
+        display: inline-block;
+        width: 180px;
+        color: navy;
+    }
 </style>
 
 <fieldset>
-	<legend>
-		BlazorPlus.BlazorSession:
-	</legend>
-	<div>
-		<label>SessionId : </label>@BlazorSession.Current.SessionId
-	</div>
-	<div>
-		<label>StartTime : </label>@BlazorSession.Current.StartTime.ToLongTimeString()
-	</div>
-	<div>
-		<label>Elapsed : </label>@((DateTime.Now - BlazorSession.Current.StartTime).ToString().Split('.')[0])
-	</div>
+    <legend>
+        BlazorPlus.BlazorSession:
+    </legend>
+    <div>
+        <label>SessionId : </label>@BlazorSession.Current.SessionId
+    </div>
+    <div>
+        <label>StartTime : </label>@BlazorSession.Current.StartTime.ToLongTimeString()
+    </div>
+    <div>
+        <label>Elapsed : </label>@((DateTime.Now - BlazorSession.Current.StartTime).ToString().Split('.')[0])
+    </div>
 
-	<div>
-		<label>Current Uri : </label>@navmgr.Uri
-</div>
+    <div>
+        <label>Current Uri : </label>@navmgr.Uri
+    </div>
 
-	<div>
-		<label>InstanceCount : </label>@BlazorSession.InstanceCount
-	</div>
-	<div>
-		<label>Session Disposed : </label>@BlazorSession.InstanceDisposedCount
-	</div>
+    <div>
+        <label>InstanceCount : </label>@BlazorSession.InstanceCount
+    </div>
+    <div>
+        <label>Session Disposed : </label>@BlazorSession.InstanceDisposedCount
+    </div>
 </fieldset>
 
 
 <fieldset>
-	<legend>
-		appsettings.json / appsettings.Development.json
-	</legend>
-	<div>
-		<label>LogLevel : </label>@config.GetSection("Logging").GetSection("LogLevel").GetSection("Default").Value
-	</div>
+    <legend>
+        appsettings.json / appsettings.Development.json
+    </legend>
+    <div>
+        <label>LogLevel : </label>@config.GetSection("Logging").GetSection("LogLevel").GetSection("Default").Value
+    </div>
 </fieldset>
 
 
 <fieldset>
-	<legend>
-		HttpContext:
-	</legend>
-	<div>
-		<label>Connection.Id : </label>@hca.HttpContext.Connection.Id
-	</div>
-	<div>
-		<label>RemoteIpAddress : </label>@hca.HttpContext.Connection.RemoteIpAddress &nbsp;&nbsp;&nbsp;&nbsp; port: @hca.HttpContext.Connection.RemotePort
-	</div>
-	<div>
-		<label>Request Url : </label>@(hca.HttpContext.Request.Scheme)://@(hca.HttpContext.Request.Host)@(hca.HttpContext.Request.Path)@(hca.HttpContext.Request.QueryString)
-	</div>
-	<div>
-		<label>Request.Headers : </label>@string.Join(",", hca.HttpContext.Request.Headers.Keys.ToArray())
-	</div>
-	<div>
-		<label>Request.Cookies : </label>@string.Join(",", hca.HttpContext.Request.Cookies.Keys.ToArray())
-	</div>
+    <legend>
+        HttpContext:
+    </legend>
+    <div>
+        <label>Connection.Id : </label>@hca.HttpContext.Connection.Id
+    </div>
+    <div>
+        <label>RemoteIpAddress : </label>@hca.HttpContext.Connection.RemoteIpAddress &nbsp;&nbsp;&nbsp;&nbsp; port: @hca.HttpContext.Connection.RemotePort
+    </div>
+    <div>
+        <label>Request Url : </label>@(hca.HttpContext.Request.Scheme)://@(hca.HttpContext.Request.Host)@(hca.HttpContext.Request.Path)@(hca.HttpContext.Request.QueryString)
+    </div>
+    <div>
+        <label>Request.Headers : </label>@string.Join(",", hca.HttpContext.Request.Headers.Keys.ToArray())
+    </div>
+    <div>
+        <label>Request.Cookies : </label>@string.Join(",", hca.HttpContext.Request.Cookies.Keys.ToArray())
+    </div>
 </fieldset>
 <fieldset>
-	<legend>
-		IWebHostEnvironment:
-	</legend>
-	<div>
-		<label>ApplicationName : </label>@whe.ApplicationName
-	</div>
-	<div>
-		<label>EnvironmentName : </label>@whe.EnvironmentName
-	</div>
-	<div>
-		<label>WebRootPath : </label>@whe.WebRootPath
-	</div>
-	<div>
-		<label>ContentRootPath : </label>@whe.ContentRootPath
-	</div>
+    <legend>
+        IWebHostEnvironment:
+    </legend>
+    <div>
+        <label>ApplicationName : </label>@whe.ApplicationName
+    </div>
+    <div>
+        <label>EnvironmentName : </label>@whe.EnvironmentName
+    </div>
+    <div>
+        <label>WebRootPath : </label>@whe.WebRootPath
+    </div>
+    <div>
+        <label>ContentRootPath : </label>@whe.ContentRootPath
+    </div>
 </fieldset>
 
 @{
-	System.Diagnostics.Process p = System.Diagnostics.Process.GetCurrentProcess();
+    System.Diagnostics.Process p = System.Diagnostics.Process.GetCurrentProcess();
 }
 
 <fieldset>
-	<legend>
-		Environment:
-	</legend>
-	<div>
-		<label>TargetFramework : </label>@AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName
-	</div>
-	<div>
-		<label>Version : </label>@Environment.Version
-	</div>
-	<div>
-		<label>OSVersion : </label>@Environment.OSVersion
-	</div>
-	<div>
-		<label>CurrentDirectory : </label>@Environment.CurrentDirectory
-	</div>
-	<div>
-		<label>WorkingSet : </label>@Environment.WorkingSet.ToString("###,###,##0")
-	</div>
-	<div>
-		<label>PeakWorkingSet64 : </label>@p.PeakWorkingSet64.ToString("###,###,##0")
-	</div>
-	<div>
-		<label>HandleCount : </label>@p.HandleCount
-	</div>
-	<div>
-		<label>ProcessName : </label>@p.ProcessName
-	</div>
-	<div>
-		<label>BaseDirectory : </label>@AppDomain.CurrentDomain.BaseDirectory
-	</div>
+    <legend>
+        Environment:
+    </legend>
+    <div>
+        <label>TargetFramework : </label>@AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName
+    </div>
+    <div>
+        <label>Version : </label>@Environment.Version
+    </div>
+    <div>
+        <label>OSVersion : </label>@Environment.OSVersion
+    </div>
+    <div>
+        <label>CurrentDirectory : </label>@Environment.CurrentDirectory
+    </div>
+    <div>
+        <label>WorkingSet : </label>@Environment.WorkingSet.ToString("###,###,##0")
+    </div>
+    <div>
+        <label>PeakWorkingSet64 : </label>@p.PeakWorkingSet64.ToString("###,###,##0")
+    </div>
+    <div>
+        <label>HandleCount : </label>@p.HandleCount
+    </div>
+    <div>
+        <label>ProcessName : </label>@p.ProcessName
+    </div>
+    <div>
+        <label>BaseDirectory : </label>@AppDomain.CurrentDomain.BaseDirectory
+    </div>
 </fieldset>
 

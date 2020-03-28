@@ -1,5 +1,7 @@
 ﻿@page "/fetchdata"
 
+@{ BlazorSession.Current["codename"] = "FetchData"; }
+
 @using BlazorPlusDemo.Data
 @inject WeatherForecastService ForecastService
 
