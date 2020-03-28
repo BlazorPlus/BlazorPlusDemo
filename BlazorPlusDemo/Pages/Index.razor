@@ -15,3 +15,18 @@ Welcome to your new app.
         BlazorSession.Current.Alert("Greeting", "Hello World");
     }
 }
+
+
+<br />
+
+<button @onclick="ShowPing">Ping Network Delay</button>
+@code{
+    async void ShowPing()
+    {
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        await BlazorSession.Current.JSRuntime.InvokeVoidAsync("console.log", "ping");
+        BlazorSession.Current.Toast(sw.ElapsedMilliseconds.ToString() + " ms");
+    }
+}
+
