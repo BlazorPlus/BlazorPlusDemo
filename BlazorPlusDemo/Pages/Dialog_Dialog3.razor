@@ -1,0 +1,55 @@
+﻿
+<div style="width: 100%; height: 100%; background-color: white; padding: 12px;">
+	<div style="display:flex;">
+		<button @onclick="DoBack">Back</button>
+
+		<span style="flex:99;text-align:center">
+			Dialog_Dialog3.razor <button @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog3"); }'>ShowCode</button>
+		</span>
+
+	</div>
+	<div style="text-align:center;font-size:1.5em;color:darkgreen;padding:32px;margin-top:5px;border-top:solid 1px #eee;">
+		Current Location : @GetLocation()
+		<br /><br />
+		Page Time : @PageTime.ToString("HH:mm:ss")
+		<br /><br />
+		<button @onclick="EnterAgain">Enter Next Level</button>
+	</div>
+
+	<div style="text-align:center;color:#666;">
+		Press ESC or click browser BACK button to close this dialog;
+	</div>
+</div>
+
+@code{
+
+	DateTime PageTime = DateTime.Now;
+
+	[CascadingParameter]
+	BlazorDialog dlg { get; set; }  // If use Dialog to show this file , this property will be setted
+
+	public string Message;
+
+	public string GetLocation()
+	{
+		return Message + " > " + PageTime.ToString("HH:mm:ss");
+	}
+
+	void EnterAgain()
+	{
+		BlazorSession.Current.ShowDialog<Dialog_Dialog3>((control, dlg) =>
+		{
+			control.Message = GetLocation();
+		});
+	}
+
+	void DoBack()
+	{
+		if (dlg != null)
+			dlg.Close();
+		else
+			BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog");
+	}
+
+
+}

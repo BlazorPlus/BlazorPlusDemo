@@ -1,0 +1,119 @@
+﻿@page "/Demo_CustomDialog"
+
+@{ BlazorSession.Current["codename"] = "Demo_CustomDialog"; }
+
+<h3>
+	Click the sample buttons to learn how to use BlazorDialog
+</h3>
+
+<table border="1" cellpadding="8">
+	<tr>
+		<th>
+			Sample
+		</th>
+		<th>
+			Description
+		</th>
+	</tr>
+	<tr>
+		<td>
+			<button @onclick="Show_InlineDialog">Inline Dialog</button>
+		</td>
+		<td>
+			The dialog code is inside this razor file
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<button @onclick="Show_RazorFileDialog">Razor File Dialog</button>
+		</td>
+		<td>
+			Dialog code is inside <a style="text-decoration:underline;cursor:pointer" @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog1"); }'>Dialog_Dialog1.razor</a>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<button @onclick="Show_Dialog2">Custom Close Behavior</button>
+		</td>
+		<td>
+			<a style="text-decoration:underline;cursor:pointer" @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog2"); }'>Dialog_Dialog2.razor</a>
+			shows how to prevent ESC/BACK button closing dialog
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<button @onclick="Show_Dialog3">FullPage Dialog</button>
+		</td>
+		<td>
+			<a style="text-decoration:underline;cursor:pointer" @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog3"); }'>Dialog_Dialog3.razor</a>
+			show use full page dialog for Navigation
+		</td>
+	</tr>
+</table>
+
+
+@code{
+	void Show_InlineDialog()
+	{
+		string nested_scope_message = "It's easy to use context data";
+
+		BlazorDialog dlg = null;
+		RenderFragment rf = __builder =>
+		{
+		<div style="width:50%;height:50%;text-align:center;background-color:white;padding:32px;border-radius:5px;box-shadow:#cccc 1px 1px 6px">
+			Press ESC or click browser BACK button to close this dialog;
+			<br />
+			<br />
+			<button @onclick="()=>dlg.Close()">Or click this button</button>
+			<br />
+			<br />
+			@nested_scope_message
+
+		</div>
+		};
+
+		Action<BlazorDialog> dlginit = argdlg =>
+		{
+			dlg = argdlg;
+			dlg.CancelHandler = delegate    //ESC or BACK button clicked
+			{
+				dlg.Close();
+			};
+		};
+
+		BlazorSession.Current.ShowDialog(rf, dlginit);
+	}
+
+	void Show_RazorFileDialog()
+	{
+		BlazorSession.Current.ShowDialog<Dialog_Dialog1>((control, dlg) =>
+		{
+			control.Message = "Hello...";
+			dlg.CancelHandler = delegate
+			{
+				dlg.Close();
+			};
+		});
+	}
+
+	void Show_Dialog2()
+	{
+		BlazorSession.Current.ShowDialog<Dialog_Dialog2>((control, dlg) =>
+		{
+			control.Message = "World...";
+
+			dlg.CloseCalled += delegate
+			{
+				BlazorSession.Current.Toast("Yes, I know dialog closed");
+			};
+		});
+	}
+
+	void Show_Dialog3()
+	{
+		BlazorSession.Current.ShowDialog<Dialog_Dialog3>((control, dlg) =>
+		{
+			control.Message = "CustomDialog";
+		});
+	}
+}

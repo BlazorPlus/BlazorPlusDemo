@@ -17,22 +17,41 @@
 
 
 
+@{ BlazorSession.Current["MainLayout"] = this;}
+
+@inject NavigationManager nav
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment whe
-
-
-
 
 @code
 {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        string codename = (string)BlazorSession.Current["codename"];
+        if (codename != null)
+        {
+            urimap[nav.Uri.ToString()] = codename;
+            BlazorSession.Current["codename"] = null;
+        }
+        base.OnAfterRender(firstRender);
+
+    }
+
+    Dictionary<string, string> urimap = new Dictionary<string, string>();
 
     void ShowCode()
     {
-        string codename = BlazorSession.Current["codename"] as string;
-        if (codename == null)
+        string codename;
+        if (!urimap.TryGetValue(nav.Uri.ToString(), out codename))
         {
             BlazorSession.Current.Toast("miss codename");
             return;
         }
+
+        _ShowCode(codename);
+    }
+
+    void _ShowCode(string codename)
+    {
         string filepath = System.IO.Path.Combine(whe.ContentRootPath, "Pages/" + codename + ".razor");
         if (!System.IO.File.Exists(filepath))
         {
@@ -77,6 +96,13 @@
         };
 
         BlazorSession.Current.ShowDialog(rf, dlginit);
-
     }
+
+
+    static public void ShowCode(string codename)
+    {
+        MainLayout layout = (MainLayout)BlazorSession.Current["MainLayout"];
+        layout._ShowCode(codename);
+    }
+
 }
