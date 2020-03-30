@@ -1,0 +1,252 @@
+﻿@page "/Demo_FileUpload"
+
+@{ BlazorSession.Current["codename"] = "Demo_FileUpload"; }
+
+@code{
+	const string UPLOAD_TOAST_KEY = "myuploadprogress";
+
+	async Task UploadHandler_Toast(BlazorUploaderFile file)
+	{
+		long readok = 0;
+		byte[] buffer = new byte[1024 * 16];
+		while (true)
+		{
+			double p = Math.Floor(100 * (double)readok / (double)file.FileSize);
+			BlazorSession.Current.Toast(file.FileName + " " + p + "% (" + readok / 1024 + "KB/" + file.FileSize / 1024 + "KB)", 5000, UPLOAD_TOAST_KEY);
+			int rc = await file.Stream.ReadAsync(buffer, 0, buffer.Length);
+			if (rc == 0)
+				break;
+			readok += rc;
+			if (readok > file.FileSize)
+				throw new Exception("Invalid stream size");
+
+			await Task.Delay(100);//control the upload speed
+		}
+		if (readok < file.FileSize)
+			throw new Exception("file upload break");
+
+		BlazorSession.Current.Toast(file.FileName + " DONE (" + readok / 1024 + "KB) " + file.FileMime, 2000, UPLOAD_TOAST_KEY);
+	}
+
+	async Task UploadHandler_Dialog(BlazorUploaderFile file)
+	{
+		BlazorDialog dlg = null;
+
+		long readok = 0;
+		bool cancelclicked = false;
+		System.Threading.CancellationTokenSource quitsignal = new System.Threading.CancellationTokenSource();
+
+		void DoCancel()
+		{
+			cancelclicked = true;
+			dlg.Close();
+		}
+
+		RenderFragment rf = (__builder) =>
+	{
+		double p = Math.Floor(100 * (double)readok / (double)file.FileSize);
+
+	<div style="padding:15px;border:solid 1px #eee;box-shadow:0px 0px 6px gray;background-color:#fff;min-width:280px;text-align:center;">
+		<div>@file.FileName</div>
+		<div>@file.FileMime</div>
+		<div>@p% @(readok/1024)KB / @(file.FileSize/1024)KB</div>
+		<div style="text-align:left;background:#eee;height:5px;position:relative;margin:3px;"><span style="position:absolute;width:@p%;display:inline-block;height:100%;background-color:darkgreen;"></span></div>
+		<div style="text-align:center"><button @onclick="DoCancel">Cancel</button></div>
+	</div>
+	};
+		async Task RunDialogAsync()
+		{
+			await Task.Delay(10);
+			try
+			{
+
+				byte[] buffer = new byte[1024 * 16];
+				while (true)
+				{
+					double p = Math.Floor(100 * (double)readok / (double)file.FileSize);
+
+					int rc = await file.Stream.ReadAsync(buffer, 0, buffer.Length);
+					if (rc == 0)
+						break;
+
+					if (cancelclicked)
+						break;
+
+					readok += rc;
+					if (readok > file.FileSize)
+						throw new Exception("Invalid stream size");
+
+					dlg.StateHasChanged();
+
+					await Task.Delay(100);
+				}
+				if (readok < file.FileSize)
+					throw new Exception("file upload break");
+
+				BlazorSession.Current.Toast(file.FileName + " DONE (" + readok / 1024 + "KB) " + file.FileMime, 2000, UPLOAD_TOAST_KEY);
+			}
+			catch (Exception x)
+			{
+				BlazorSession.Current.ConsoleError(x.ToString());
+			}
+			finally
+			{
+				quitsignal.Cancel();
+				if (!cancelclicked) dlg.Close();
+			}
+
+
+			BlazorSession.Current.ConsoleLog("RunDialogAsync END");
+		}
+		void DialogInit(BlazorDialog argdlg)
+		{
+			dlg = argdlg;
+			Task t = RunDialogAsync();
+		}
+
+
+		BlazorSession.Current.ShowDialog(rf, DialogInit);
+
+		try
+		{
+			//must wait until quitsignal be set , otherwise the file will be disposed*
+			await Task.Delay(-1, quitsignal.Token);
+		}
+		catch (TaskCanceledException)
+		{
+
+		}
+	}
+}
+
+<h1>BlazorUploader</h1>
+<p>
+	The BlazorUploader component helps developer to streaming the upload data easily.
+</p>
+<p style="color:red">
+	In this sample , the upload speed is limited
+</p>
+
+<fieldset>
+	<legend>Simple Uploader</legend>
+	<BlazorUploader @ref="uploader1" />
+</fieldset>
+
+@code
+{
+	BlazorUploader __uploader1;
+	BlazorUploader uploader1
+	{
+		get
+		{
+			return __uploader1;
+		}
+		set
+		{
+			__uploader1 = value;
+			if (__uploader1 == null) return;
+			__uploader1.ProcessSingleUploadAsync = UploadHandler_Toast;
+		}
+	}
+
+
+}
+
+
+<br />
+<fieldset>
+	<legend>As Transparent Mask</legend>
+
+	<button style="display:inline-block;position:relative;">
+		<span>Upload a file</span>
+		<BlazorUploader @ref="uploader2" CssText="position:absolute;left:0px;top:0px;width:100%;height:100%;opacity:0" />
+	</button>
+
+</fieldset>
+
+@code
+{
+	BlazorUploader __uploader2;
+	BlazorUploader uploader2
+	{
+		get
+		{
+			return __uploader2;
+		}
+		set
+		{
+			__uploader2 = value;
+			if (__uploader2 == null) return;
+			__uploader2.ProcessSingleUploadAsync = UploadHandler_Toast;
+		}
+	}
+}
+
+
+<br />
+<fieldset>
+	<legend>Progress dialog with cancel button</legend>
+
+	<button style="display:inline-block;position:relative;">
+		<span>Upload a file</span>
+		<BlazorUploader @ref="uploader3" CssText="position:absolute;left:0px;top:0px;width:100%;height:100%;opacity:0" />
+	</button>
+
+</fieldset>
+
+@code
+{
+	BlazorUploader __uploader3;
+	BlazorUploader uploader3
+	{
+		get
+		{
+			return __uploader3;
+		}
+		set
+		{
+			__uploader3 = value;
+			if (__uploader3 == null) return;
+			__uploader3.ProcessSingleUploadAsync = UploadHandler_Dialog;
+		}
+	}
+}
+
+
+<br />
+<fieldset>
+	<legend>JavaScript Blob Upload API</legend>
+
+	<button style="display:inline-block;position:relative;" onclick="
+	var uploader = this.querySelector('input');
+	var arr = [document.documentElement.outerHTML];
+	for (var i = 0; i != 10; i++)
+		arr = arr.concat(arr);
+	var file = new Blob(arr, {type:'text/html'});
+	file.name = 'theFileIsCreatedByJavaScript.htm';
+	uploader.postfiles([file]);
+	">
+		<span>Generate file and upload</span>
+		<BlazorUploader @ref="uploader4" CssText="position:absolute;left:0px;top:0px;width:0px;opacity:0" />
+	</button>
+
+</fieldset>
+
+@code
+{
+	BlazorUploader __uploader4;
+	BlazorUploader uploader4
+	{
+		get
+		{
+			return __uploader4;
+		}
+		set
+		{
+			__uploader4 = value;
+			if (__uploader4 == null) return;
+			__uploader4.ProcessSingleUploadAsync = UploadHandler_Dialog;
+		}
+	}
+}
+

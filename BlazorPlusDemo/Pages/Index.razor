@@ -41,14 +41,15 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
 
-        List<string> msgs = new List<string>();
+        List<string>
+    msgs = new List<string>
+        ();
         for (int i = 0; i < 5; i++)
         {
             sw.Restart();
             await BlazorSession.Current.JSRuntime.InvokeVoidAsync("console.log", "ping");
             msgs.Add(sw.ElapsedMilliseconds.ToString() + " ms");
-            BlazorSession.Current.ToastClear();
-            BlazorSession.Current.Toast(string.Join("\r\n", msgs.ToArray()));
+            BlazorSession.Current.Toast(string.Join("\r\n", msgs.ToArray()), i == 4 ? 1000 : 3000, "mynetworkinfo");
         }
         sw = null;
     }
@@ -114,7 +115,8 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
     }
     void DoGetSessionDataCount()
     {
-        Dictionary<object, object> map = BlazorSession.Current.GetItemMap(false);
+        Dictionary<object, object>
+            map = BlazorSession.Current.GetItemMap(false);
         if (map == null)
             BlazorSession.Current.Toast("There's no any session data");
         else
@@ -141,7 +143,7 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
     <div>Interactive with browser script</div>
     <button @onclick='()=>BlazorSession.Current.EvalCode("alert(arguments[0])","This is argument 0")'>EvalCode</button>
     <button @onclick='DoInvokeFunction'>InvokeFunction</button>
-    <button @onclick='DoGetClientTime'>JSRuntime Read</button>
+    <button @onclick='DoGetLocalSotrange'>JSRuntime Read</button>
     <button @onclick='DoTestClientCallback'>JSRuntime Callback</button>
     <a href="/Demo_JavaScript">More JavaScript Sample</a>
 </fieldset>
@@ -150,17 +152,23 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
 
     void DoInvokeFunction()
     {
-        BlazorSession.Current.ConfirmYes("Refresh", "Click OK to refresh this page", () =>
-        {
         //Use InvokeFunction to pass parameters more easily
-        BlazorSession.Current.InvokeFunction("location.reload", true);// location.reload(true);
-    });
+        BlazorSession.Current.InvokeFunction("localStorage.setItem", "demo-index-value", DateTime.Now.Ticks.ToString());
+        BlazorSession.Current.Alert("Done", "Click 'JSRuntime Read' to get result");
     }
 
-    async void DoGetClientTime()
+    async void DoGetLocalSotrange()
     {
-        string clientTime = await BlazorSession.Current.JSRuntime.InvokeAsync<string>("eval", "(function(){console.log('get client time'); return new Date().toString()})()");
-        BlazorSession.Current.Toast(clientTime, 1000, "clienttime");
+        string value = await BlazorSession.Current.JSRuntime.InvokeAsync<string>
+            ("eval", "(function(){console.log('get localStorage'); return localStorage.getItem('demo-index-value')})()");
+        long ticks;
+        if (!long.TryParse(value, out ticks))
+            BlazorSession.Current.Alert("Error", "You never click the 'InvokeFunction' button yet");
+        else
+        {
+            TimeSpan ts = DateTime.Now - new DateTime(ticks);
+            BlazorSession.Current.Alert("demo-index-value", "You clicked 'InvokeFunction' button " + Math.Ceiling(ts.TotalSeconds) + " seconds ago\r\nReload this page and try again.");
+        }
     }
 
     DotNetObjectReference<Index> dno;
@@ -190,7 +198,7 @@ setTimeout(function(){
 dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client side');
 },800);
 "
-, dno);
+        , dno);
     }
 
     [Microsoft.JSInterop.JSInvokable()]
@@ -205,3 +213,15 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
         BlazorSession.Current.Alert("Result", msg);
     }
 }
+
+
+
+
+
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />

@@ -1,6 +1,34 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">BlazorPlusDemo</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+﻿<style>
+
+    @@keyframes navbar-toggler-flash {
+        from {
+            background: darkgreen;
+        }
+
+        to {
+            background: darkorange;
+        }
+    }
+
+    .navbar-toggler-flash {
+        animation: navbar-toggler-flash 1.2s ease 999999 alternate;
+    }
+
+    @@media (min-width: 768px) {
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .collapse {
+            overflow-y: auto;
+        }
+    }
+</style>
+
+<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">BlazorPlusWebTemplate</a>
+    <button class="navbar-toggler navbar-toggler-flash" onmousedown="this.classList.remove('navbar-toggler-flash')" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
 </div>
@@ -21,6 +49,11 @@
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="/Demo_CustomDialog">
                 <span class="oi oi-plus" aria-hidden="true"></span> Custom Dialog
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="Demo_FileUpload">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> File Upload
             </NavLink>
         </li>
         <li class="nav-item px-3">
