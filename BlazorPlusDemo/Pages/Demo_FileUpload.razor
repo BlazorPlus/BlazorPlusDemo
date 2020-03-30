@@ -250,3 +250,107 @@
 	}
 }
 
+
+
+
+<br />
+<fieldset>
+	<legend>Check Upload Parameter (Image file &lt; 200K) </legend>
+
+	<button style="display:inline-block;position:relative;">
+		<span>Upload a file</span>
+		<BlazorUploader @ref="uploader5" CssText="position:absolute;left:0px;top:0px;width:100%;height:100%;opacity:0" />
+	</button>
+
+</fieldset>
+
+@code
+{
+	bool IsFileOK(BlazorUploaderFile file)
+	{
+		if (file.FileSize > 1024 * 200)
+			return false;
+		if (!file.FileMime.StartsWith("image/"))
+			return false;
+		return true;
+	}
+
+	BlazorUploader __uploader5;
+	BlazorUploader uploader5
+	{
+		get
+		{
+			return __uploader5;
+		}
+		set
+		{
+			__uploader5 = value;
+			if (__uploader5 == null) return;
+			__uploader5.ProcessSingleUploadAsync = async (file) =>
+			{
+			//must check it again.
+			if (!IsFileOK(file))
+					throw new Exception("Invalid file");
+
+				await UploadHandler_Dialog(file);
+			};
+			__uploader5.ProcessQueryUploadAsync = async (files) =>
+			{
+				foreach (var file in files)
+				{
+					if (!IsFileOK(file))
+					{
+						file.Cancel = true;
+						BlazorSession.Current.Alert("Error", "Please select another file");
+					}
+				}
+			};
+		}
+	}
+}
+
+
+
+
+<br />
+<fieldset>
+	<legend>Client side pre-handler : Resize image before upload</legend>
+
+	<button style="display:inline-block;position:relative;" onmousedown="
+	var uploader = this.querySelector('input');
+	uploader.onchange = function () {
+		setTimeout(function () { uploader.value = ''; }, 1);
+		if (!uploader.files.length) return;
+		var file = uploader.files[0];
+		if (file.type.substring(0, 6) != 'image/')
+			return Toast('Please select a photo',2000);
+		file.size
+	}
+	uploader.click();
+	">
+		<span>Upload a file</span>
+		<BlazorUploader @ref="uploader6" CssText="position:absolute;left:0px;top:0px;width:0;opacity:0" />
+	</button>
+
+</fieldset>
+
+@code
+{
+	BlazorUploader __uploader6;
+	BlazorUploader uploader6
+	{
+		get
+		{
+			return __uploader6;
+		}
+		set
+		{
+			__uploader6 = value;
+			if (__uploader6 == null) return;
+			__uploader6.ProcessSingleUploadAsync = UploadHandler_Dialog;
+		}
+	}
+}
+
+
+<br /><br /><br/><br />

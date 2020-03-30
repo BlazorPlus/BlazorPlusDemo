@@ -30,6 +30,8 @@ namespace BlazorPlusDemo
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
+            services.AddResponseCompression();
+
             //Install-BlazorPlus
             services.AddHttpContextAccessor();
             //services.AddScoped<BlazorPlus.BlazorSession>();
@@ -52,6 +54,9 @@ namespace BlazorPlusDemo
             }
 
             app.UseHttpsRedirection();
+
+            app.UseResponseCompression();
+
             app.UseStaticFiles();
 
             app.UseRouting();
