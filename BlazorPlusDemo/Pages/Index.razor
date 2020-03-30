@@ -2,10 +2,23 @@
 
 @{ BlazorSession.Current["codename"] = "Index"; }
 
+@* for disposing dno *@
+@implements IDisposable
+
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
 
+<br />
+<br />
+
+This the basic demo for BlazorPlus
+<br />
+Demo source  : <a href="https://github.com/BlazorPlus/BlazorPlusDemo" target="_blank">https://github.com/BlazorPlus/BlazorPlusDemo</a>
+<br />
+Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus.com</a>
+
+<br />
 <br />
 
 @*Install-BlazorPlus*@
@@ -19,7 +32,7 @@ Welcome to your new app.
 }
 
 
-<br />
+,
 
 <button @onclick="ShowPing">Ping Network Delay</button>
 @code{
@@ -41,3 +54,154 @@ Welcome to your new app.
     }
 }
 
+<hr />
+
+<h2>BlazorSession:</h2>
+<p>Each page has an unique BlazorSession object</p>
+
+<style>
+    legend {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 0px;
+    }
+
+    .mywarningtoast {
+        background-color: orange !important;
+        color: darkgreen !important;
+    }
+</style>
+
+<fieldset>
+    <legend>Toast:</legend>
+    <div>Say something witout clicking OK ,all previous items with same key will be cleared</div>
+    <button @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000)'>Toast</button>
+    <button @onclick='()=>BlazorSession.Current.ToastClear()'>ToastClear</button>
+    <button @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000,"mytimetoast")'>Toast With Key</button>
+    <button @onclick='()=>BlazorSession.Current.Toast("The action is failed.",2000,"mywarningtoast")'>Key as css class</button>
+</fieldset>
+
+
+<br />
+<fieldset>
+    <legend>Session Data:</legend>
+    <div>Use session data to store session scope data, components can community with each other.</div>
+    <button @onclick='DoSetSessionData'>Set Session Data</button>
+    <button @onclick='DoReadSessionData'>Read Session Data</button>
+    <button @onclick='DoGetSessionDataCount'>Get Session Data Count</button>
+</fieldset>
+
+
+@code{
+    void DoSetSessionData()
+    {
+        int sid = BlazorSession.Current.SessionId;
+        int num = new Random().Next(1000, 9999);
+        BlazorSession.Current["magicnumber"] = num;
+        BlazorSession.Current.Alert("SetSessionData", "Session Id is " + sid + ", magic number is " + num + " , try to switch to another tab and back , click Read Session Data");
+    }
+    void DoReadSessionData()
+    {
+        int sid = BlazorSession.Current.SessionId;
+        int num = 0;
+        object objnum = BlazorSession.Current["magicnumber"];
+        if (objnum != null)
+            num = (int)objnum;
+        if (objnum == null)
+            BlazorSession.Current.Alert("SetSessionData", "Session Id is " + sid + ", but there's no magic number. If you ever refreshed the page , the session will be resetted");
+        else
+            BlazorSession.Current.Alert("SetSessionData", "Session Id is " + sid + ", magic number is " + num + " , try to switch to another tab and back , click Read Session Data");
+    }
+    void DoGetSessionDataCount()
+    {
+        Dictionary<object, object> map = BlazorSession.Current.GetItemMap(false);
+        if (map == null)
+            BlazorSession.Current.Toast("There's no any session data");
+        else
+            BlazorSession.Current.Toast("Session Data Count : " + map.Count);
+    }
+}
+
+<br />
+<fieldset>
+    <legend>Console:</legend>
+    <div>open browser console to check the logs</div>
+    <button @onclick='()=>BlazorSession.Current.ConsoleLog("Current Date Is",DateTime.Now)'>ConsoleLog</button>
+
+    <button @onclick='()=>BlazorSession.Current.ConsoleInfo("Current Date Is",DateTime.Now)'>ConsoleInfo</button>
+
+    <button @onclick='()=>BlazorSession.Current.ConsoleWarn("Current Date Is",DateTime.Now)'>ConsoleWarn</button>
+
+    <button @onclick='()=>BlazorSession.Current.ConsoleError("Current Date Is",DateTime.Now,Environment.StackTrace)'>ConsoleError</button>
+</fieldset>
+
+<br />
+<fieldset>
+    <legend>JavaScript:</legend>
+    <div>Interactive with browser script</div>
+    <button @onclick='()=>BlazorSession.Current.EvalCode("alert(arguments[0])","This is argument 0")'>EvalCode</button>
+    <button @onclick='DoInvokeFunction'>InvokeFunction</button>
+    <button @onclick='DoGetClientTime'>JSRuntime Read</button>
+    <button @onclick='DoTestClientCallback'>JSRuntime Callback</button>
+    <a href="/Demo_JavaScript">More JavaScript Sample</a>
+</fieldset>
+
+@code{
+
+    void DoInvokeFunction()
+    {
+        BlazorSession.Current.ConfirmYes("Refresh", "Click OK to refresh this page", () =>
+        {
+        //Use InvokeFunction to pass parameters more easily
+        BlazorSession.Current.InvokeFunction("location.reload", true);// location.reload(true);
+    });
+    }
+
+    async void DoGetClientTime()
+    {
+        string clientTime = await BlazorSession.Current.JSRuntime.InvokeAsync<string>("eval", "(function(){console.log('get client time'); return new Date().toString()})()");
+        BlazorSession.Current.Toast(clientTime, 1000, "clienttime");
+    }
+
+    DotNetObjectReference<Index> dno;
+
+    void IDisposable.Dispose()
+    {
+        if (dno != null)
+            dno.Dispose();
+    }
+
+    void DoTestClientCallback()
+    {
+        if (dno != null)
+        {
+            BlazorSession.Current.ToastClear();
+            BlazorSession.Current.Toast("another job is running");
+            return;
+        }
+
+        dno = DotNetObjectReference.Create(this);
+
+        BlazorSession.Current.EvalCode(@"
+var dno=arguments[0];
+console.log(dno);
+Toast('wait for 0.8 sec',800);
+setTimeout(function(){
+dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client side');
+},800);
+"
+, dno);
+    }
+
+    [Microsoft.JSInterop.JSInvokable()]
+    public void _Index_ClientCallbackHandler(string msg)
+    {
+        if (dno != null)
+        {
+            dno.Dispose();
+            dno = null;
+        }
+
+        BlazorSession.Current.Alert("Result", msg);
+    }
+}
