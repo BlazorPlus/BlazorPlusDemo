@@ -5,8 +5,15 @@
 @code{
 	const string UPLOAD_TOAST_KEY = "myuploadprogress";
 
+
+	System.IO.Stream _streamtosave = null;
+
+
 	async Task UploadHandler_Toast(BlazorUploaderFile file)
 	{
+		System.IO.Stream targetstream = _streamtosave;
+		_streamtosave = null;
+
 		long readok = 0;
 		byte[] buffer = new byte[1024 * 16];
 		while (true)
@@ -20,6 +27,9 @@
 			if (readok > file.FileSize)
 				throw new Exception("Invalid stream size");
 
+			if (targetstream != null)
+				await targetstream.WriteAsync(buffer, 0, rc);
+
 			await Task.Delay(100);//control the upload speed
 		}
 		if (readok < file.FileSize)
@@ -30,6 +40,9 @@
 
 	async Task UploadHandler_Dialog(BlazorUploaderFile file)
 	{
+		System.IO.Stream targetstream = _streamtosave;
+		_streamtosave = null;
+
 		BlazorDialog dlg = null;
 
 		long readok = 0;
@@ -43,17 +56,17 @@
 		}
 
 		RenderFragment rf = (__builder) =>
-	{
-		double p = Math.Floor(100 * (double)readok / (double)file.FileSize);
+		{
+			double p = Math.Floor(100 * (double)readok / (double)file.FileSize);
 
-	<div style="padding:15px;border:solid 1px #eee;box-shadow:0px 0px 6px gray;background-color:#fff;min-width:280px;text-align:center;">
-		<div>@file.FileName</div>
-		<div>@file.FileMime</div>
-		<div>@p% @(readok/1024)KB / @(file.FileSize/1024)KB</div>
-		<div style="text-align:left;background:#eee;height:5px;position:relative;margin:3px;"><span style="position:absolute;width:@p%;display:inline-block;height:100%;background-color:darkgreen;"></span></div>
-		<div style="text-align:center"><button @onclick="DoCancel">Cancel</button></div>
-	</div>
-	};
+		<div style="padding:15px;border:solid 1px #eee;box-shadow:0px 0px 6px gray;background-color:#fff;min-width:280px;text-align:center;">
+			<div>@file.FileName</div>
+			<div>@file.FileMime</div>
+			<div>@p% @(readok/1024)KB / @(file.FileSize/1024)KB</div>
+			<div style="text-align:left;background:#eee;height:5px;position:relative;margin:3px;"><span style="position:absolute;width:@p%;display:inline-block;height:100%;background-color:darkgreen;"></span></div>
+			<div style="text-align:center"><button @onclick="DoCancel">Cancel</button></div>
+		</div>
+		};
 		async Task RunDialogAsync()
 		{
 			await Task.Delay(10);
@@ -75,6 +88,10 @@
 					readok += rc;
 					if (readok > file.FileSize)
 						throw new Exception("Invalid stream size");
+
+
+					if (targetstream != null)
+						await targetstream.WriteAsync(buffer, 0, rc);
 
 					dlg.StateHasChanged();
 
@@ -316,18 +333,7 @@
 <fieldset>
 	<legend>Client side pre-handler : Resize image before upload</legend>
 
-	<button style="display:inline-block;position:relative;" onmousedown="
-	var uploader = this.querySelector('input');
-	uploader.onchange = function () {
-		setTimeout(function () { uploader.value = ''; }, 1);
-		if (!uploader.files.length) return;
-		var file = uploader.files[0];
-		if (file.type.substring(0, 6) != 'image/')
-			return Toast('Please select a photo',2000);
-		file.size
-	}
-	uploader.click();
-	">
+	<button style="display:inline-block;position:relative;" onmousedown="@uploader6_onclick_script">
 		<span>Upload a file</span>
 		<BlazorUploader @ref="uploader6" CssText="position:absolute;left:0px;top:0px;width:0;opacity:0" />
 	</button>
@@ -347,10 +353,111 @@
 		{
 			__uploader6 = value;
 			if (__uploader6 == null) return;
-			__uploader6.ProcessSingleUploadAsync = UploadHandler_Dialog;
+			__uploader6.ProcessSingleUploadAsync = async (file) =>
+			{
+
+				try
+				{
+					System.IO.MemoryStream ms = new System.IO.MemoryStream();
+					_streamtosave = ms;
+
+					await UploadHandler_Dialog(file);
+
+					string dataurl = "data:" + file.FileMime + ";base64," + Convert.ToBase64String(ms.ToArray());
+
+					BlazorSession.Current.ConsoleLog("dataurl size " + dataurl.Length);
+
+					BlazorDialog dlg = null;
+					RenderFragment rf = (__builder) =>
+				{
+
+				<div style="padding:15px;border:solid 1px #eee;box-shadow:0px 0px 6px gray;background-color:#fff;min-width:280px;text-align:center;">
+					<div>@file.FileName @file.FileMime @(file.FileSize/1024)KB </div>
+					<div><img src="@dataurl" @onclick="() => dlg.Close()" style="max-width:90%;max-height:90%;" /></div>
+				</div>
+				};
+					BlazorSession.Current.ShowDialog(rf, (argdlg) => { dlg = argdlg; });
+				}
+				catch (Exception x)
+				{
+					BlazorSession.Current.ConsoleError(x.ToString());
+				}
+			};
 		}
 	}
+
+	const string uploader6_onclick_script = @"
+var uploader = this.querySelector('input');
+uploader.onchange = function () {
+setTimeout(function () { uploader.value = ''; }, 1);
+if (!uploader.files.length) return;
+var file = uploader.files[0];
+if (file.type.substring(0, 6) != 'image/')
+return Toast('Please select a photo',2000);
+
+var img = new Image();
+
+img.onload = function () {
+setTimeout(function(){
+file=MakeNewFile(img,file)
+uploader.postfiles([file]);
+}, 1);
+}
+
+var fr = new FileReader();
+fr.readAsDataURL(file);
+fr.onload = function () {
+img.src = fr.result;
+}
+}
+uploader.click();
+
+
+function MakeNewFile(img,file) {
+var imgw = img.width;
+var imgh = img.height;
+
+var newfile=file;
+
+//console.log(imgw + ':' + imgh);
+
+var maxw = 960;
+var maxh = 960;
+
+var f = Math.max(imgw / maxw, imgh / maxh);
+if (f < 1)
+return file;
+
+var neww = Math.floor(imgw / f);
+var newh = Math.floor(imgh / f);
+var canvas = document.createElement('canvas');
+canvas.width = neww;
+canvas.height = newh;
+var ctx = canvas.getContext('2d');
+ctx.drawImage(img, 0, 0, imgw, imgh, 0, 0, neww, newh);
+
+var dataurl = canvas.toDataURL('image/jpeg');;
+
+var bs = atob(dataurl.split(',')[1]);
+var ab = new ArrayBuffer(bs.length);
+var ia = new Uint8Array(ab);
+for (i = 0; i < bs.length; i += 1) {
+ia[i] = bs.charCodeAt(i);
+}
+var newfile = new Blob([ab], { type: 'image/jpeg' });//, name: file.name, lastModified: file.lastModified, lastModifiedDate: file.lastModifiedDate
+newfile.name = file.name;
+
+console.warn( imgw+'*'+imgh+' resized to '+neww+'*'+newh);
+console.warn( Math.floor(file.size/1024)+'KB resized to '+Math.floor(newfile.size/1024)+'KB');
+
+return newfile;
+}
+
+";
 }
 
 
-<br /><br /><br/><br />
+<br />
+<br />
+<br />
+<br />

@@ -6,15 +6,17 @@
 
 <div class="main">
     <div class="top-row px-4">
+
         <button @onclick="ShowCode">Show Code</button>
+
     </div>
 
-    <div class="content px-4">
-        @Body
+    <div class="content px-4" style="padding-bottom:88px">
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
     </div>
 </div>
-
-
 
 
 @{ BlazorSession.Current["MainLayout"] = this;}
@@ -82,7 +84,7 @@
             </style>
             <div style="display:flex;"><span style="flex:99">@codename</span><span class="mainlayout_span_close" @onclick="()=> { dlg.Close(); }">×</span></div>
             <textarea style="resize:none;width:100%;flex:99;">@System.IO.File.ReadAllText(filepath)</textarea>
-            <div><a href="@linkurl" target="_blank">@linkurl</a></div>
+            <div style="overflow:hidden;text-overflow:ellipsis"><a href="@linkurl" target="_blank">@linkurl</a></div>
         </div>
         };
 
@@ -103,6 +105,11 @@
     {
         MainLayout layout = (MainLayout)BlazorSession.Current["MainLayout"];
         layout._ShowCode(codename);
+    }
+    static public void ShowCurrentCode()
+    {
+        MainLayout layout = (MainLayout)BlazorSession.Current["MainLayout"];
+        layout.ShowCode();
     }
 
 }
