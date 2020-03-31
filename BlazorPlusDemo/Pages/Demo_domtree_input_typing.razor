@@ -1,0 +1,23 @@
+﻿@page "/Demo_domtree_input_typing"
+
+@{ BlazorSession.Current["codename"] = "Demo_domtree_input_typing"; }
+
+Your message :
+<BlazorDomTree @ref="dt"></BlazorDomTree>
+
+@code{
+
+	BlazorDomTree dt;
+
+	protected override void OnAfterRender(bool first)
+	{
+		if (!first)
+			return;
+
+		PlusControl inp1 = dt.Root.Create("input type='text'");
+		inp1.OnChanging(delegate
+		{
+			BlazorSession.Current.Toast("Your are typing '" + inp1.Value + "'", 1000, "typinginfo");
+		});
+	}
+}
