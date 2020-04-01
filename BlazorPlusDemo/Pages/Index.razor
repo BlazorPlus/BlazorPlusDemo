@@ -24,10 +24,10 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
 
 <button @onclick="ShowHelloWorld">Hello World</button>
 @code{
-    void ShowHelloWorld()
-    {
-        BlazorSession.Current.Alert("Greeting", "Hello World");
-    }
+	void ShowHelloWorld()
+	{
+		BlazorSession.Current.Alert("Greeting", "Hello World");
+	}
 }
 
 
@@ -35,29 +35,32 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
 
 <button @onclick="ShowPing">Ping Network Delay</button>
 @code{
-    async void ShowPing()
-    {
-        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-        sw.Start();
+	async void ShowPing()
+	{
+		System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+		sw.Start();
 
-        List<string>
-    msgs = new List<string>
-        ();
-        for (int i = 0; i < 5; i++)
-        {
-            sw.Restart();
-            await BlazorSession.Current.JSRuntime.InvokeVoidAsync("console.log", "ping");
-            msgs.Add(sw.ElapsedMilliseconds.ToString() + " ms");
-            BlazorSession.Current.Toast(string.Join("\r\n", msgs.ToArray()), i == 4 ? 1000 : 3000, "mynetworkinfo");
-        }
-        sw = null;
-    }
+		List<string>
+	msgs = new List<string>
+		();
+		for (int i = 0; i < 5; i++)
+		{
+			sw.Restart();
+			await BlazorSession.Current.JSRuntime.InvokeVoidAsync("console.log", "ping");
+			msgs.Add(sw.ElapsedMilliseconds.ToString() + " ms");
+			BlazorSession.Current.Toast(string.Join("\r\n", msgs.ToArray()), i == 4 ? 1000 : 3000, "mynetworkinfo");
+		}
+		sw = null;
+	}
 }
 
 <hr />
 <p>
-    Click demo menu for more functions
+	Click demo menu for more functions
 </p>
+
+@*<h4>Special samples:</h4>
+<a href="/Test_PeerChat">Chat Room</a>*@
 
 <br />
 <br />

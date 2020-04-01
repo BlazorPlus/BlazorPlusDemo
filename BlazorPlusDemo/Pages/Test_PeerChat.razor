@@ -1,0 +1,563 @@
+﻿@page "/Test_PeerChat"
+@using System.Security.Cryptography
+
+@{ BlazorSession.Current["codename"] = "Test_PeerChat"; }
+
+@implements IDisposable
+
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
+
+@code{
+
+    public string IPAddress;
+
+    async Task LoadStorageAsync()
+    {
+        string demo_peerchat_visitordata = await BlazorSession.Current.JSRuntime.InvokeAsync<string>
+("eval"
+, "(function(){var val=sessionStorage.getItem('demo_peerchat_visitordata');console.log('demo_peerchat_visitordata',val);return val;})()");
+
+        BlazorSession.Current.ToastClear();
+
+        IPAddress = hca.HttpContext.Connection.RemoteIpAddress.ToString();
+
+        _Chat_Join(demo_peerchat_visitordata);
+
+        StateHasChanged();
+    }
+}
+
+@{
+    if (IPAddress == null)
+    {
+        <div style="margin:32px;text-align:center;">loading...</div>
+        BlazorSession.Current.Toast("loading...", 5000);
+        Task t = LoadStorageAsync();
+        return;
+    }
+
+    Chatter[] renderchatters;
+    lock (room)
+    {
+        renderchatters = room.Chatters.ToArray();
+    }
+}
+
+<p>Your IP Address : @IPAddress , each IP share one chat room. </p>
+<p>
+    ChatRoom [<span style="color:firebrick">@room.RoomName</span>] starts at @(room.StartTime.ToString("yyyy-MM-dd HH:mm:ss")) , Your Name : [<span style="color:firebrick">@mychatter.Name</span>] Visitors:<span style="color:firebrick">@room.Chatters.Count</span>
+    , <a href="Test_PeerChat" target="_blank">Open this page in incognito mode</a> to test more chatters
+</p>
+
+@{
+    string tablestyle = "width:100%;";
+    if (mychatter.IsRemoved)
+        tablestyle += "background-color:#eee;";
+}
+<table border="1" cellspacing="10" style="@tablestyle">
+    <tr style="height:20px;text-align:center;">
+        <th>
+            Messages:
+        </th>
+        <th style="width:100px;">
+            Visitors
+        </th>
+    </tr>
+    <tr>
+        <td style="vertical-align:top;height:300px;max-height:400px;overflow-y:scroll;">
+            <BlazorDomTree @ref="bdt_messagepanel" style="height:300px;overflow-y:auto;padding:5px 5px 15px" />
+        </td>
+        <td style="vertical-align:top;text-align:center;">
+            [<span style="color:firebrick">@mychatter.Name</span>]
+            @if (renderchatters.Any(v => v != mychatter))
+            {
+                foreach (Chatter visitor in renderchatters)
+                {
+                    if (visitor.UniqueID == mychatter.UniqueID)
+                        continue;
+
+                    <div>@visitor.Name</div>
+                }
+            }
+            else
+            {
+                <div style="margin:100px 0;color:gray">
+                    No Others
+                </div>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <BlazorDomTree @ref="bdt_inputbox" TagName="input" style="width:100%;padding:1px 5px;" />
+        </td>
+        <td><button @onclick="Send_Msg" style="width:100%">Send</button></td>
+    </tr>
+</table>
+
+
+@code {
+
+    BlazorDomTree bdt_messagepanel;
+    BlazorDomTree bdt_inputbox;
+
+
+    class Chatter
+    {
+        public DateTime JoinTime = DateTime.Now;
+        public Test_PeerChat ChatPage;
+        BlazorSession Session;
+        public string Name;
+        public string UniqueID;
+        public bool IsRemoved;
+
+        public Chatter(Test_PeerChat cp, BlazorSession ses, string id, string name)
+        {
+            ChatPage = cp;
+            Session = ses;
+            UniqueID = id;
+            Name = name;
+        }
+        public void PostToThread(Action handler)
+        {
+            if (Session == null)
+                return;//maybe?
+            try
+            {
+                Session.PostToRenderThread(handler);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+        public void Dispose()
+        {
+            Session = null;
+            ChatPage = null;
+        }
+    }
+
+    class MsgHistory
+    {
+        public DateTime MsgTime;
+        public Chatter Visitor;
+        public string Message;
+    }
+
+    class ChatRoom
+    {
+        int MaxHistory = 20;
+        public Queue<MsgHistory> Messages = new Queue<MsgHistory>();
+
+        public int NextUserId = 1;
+        public DateTime StartTime = DateTime.Now;
+
+        public string HashSalt = Guid.NewGuid().ToString();
+        public TripleDES tdes = TripleDES.Create();
+
+        public string UniqueKey;
+        public ChatRoom(string key)
+        {
+            UniqueKey = key;
+            byte[] data;
+
+            Random r = new Random(UniqueKey.GetHashCode());
+
+            data = new byte[tdes.Key.Length];
+            r.NextBytes(data);
+            tdes.Key = data;
+
+            data = new byte[tdes.IV.Length];
+            r.NextBytes(data);
+            tdes.IV = data;
+
+        }
+
+        public string RoomName
+        {
+            get
+            {
+                return "Room-" + UniqueKey;
+            }
+        }
+
+        public List<Chatter> Chatters = new List<Chatter>();
+
+        public void Add_Chatter(Chatter chatter)
+        {
+            Chatters.Add(chatter);
+
+            foreach (Chatter ec in Chatters)
+            {
+                if (ec == chatter)
+                    continue;
+
+                ec.PostToThread(delegate
+                {
+                    ec.ChatPage._On_Chatter_Join(chatter);
+                });
+            }
+
+        }
+        public void Remove_Chatter(Chatter chatter)
+        {
+            chatter.IsRemoved = true;
+            Chatters.Remove(chatter);
+            foreach (Chatter ec in Chatters)
+            {
+                if (ec == chatter)
+                    continue;
+                ec.PostToThread(delegate
+                {
+                    ec.ChatPage._On_Chatter_Leave(chatter);
+                });
+            }
+        }
+        public void Send_Message(Chatter chatter, string msg)
+        {
+            DateTime msgtime = DateTime.Now;
+
+            Messages.Enqueue(new MsgHistory() { MsgTime = msgtime, Visitor = chatter, Message = msg });
+            while (Messages.Count > MaxHistory)
+                Messages.Dequeue();
+
+            foreach (Chatter ec in Chatters)
+            {
+                ec.PostToThread(delegate
+                {
+                    ec.ChatPage._On_Message(msgtime, chatter, msg);
+                });
+            }
+        }
+
+        public void StartAutoRecycle()
+        {
+            _autorecyclestart = DateTime.Now;
+            if (_autorecycletask == null)
+                _autorecycletask = AutoRecycleChecker();
+        }
+
+        DateTime _autorecyclestart;
+        Task _autorecycletask;
+        async Task AutoRecycleChecker()
+        {
+            try
+            {
+                while (true)
+                {
+                    await Task.Delay(3000);
+
+                    if (Chatters.Count != 0)
+                        return;
+
+                    if (DateTime.Now - _autorecyclestart > TimeSpan.FromSeconds(30))
+                    {
+                        lock (globalchatroomdict)
+                        {
+                            globalchatroomdict.Remove(this.UniqueKey);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _autorecycletask = null;
+            }
+        }
+    }
+
+    static Dictionary<string, ChatRoom> globalchatroomdict = new Dictionary<string, ChatRoom>();
+
+    string myid;
+    string myname;
+    Chatter mychatter;
+    ChatRoom room;
+
+    string GetStoragePrefix()
+    {
+        return "[" + room.UniqueKey + "]";
+    }
+    string ComputeHash(string id, string name)
+    {
+        string str = room.HashSalt + ":" + id + ":" + name;
+        byte[] data = System.Text.Encoding.UTF8.GetBytes(str);
+        data = MD5.Create().ComputeHash(data);
+        str = Convert.ToBase64String(data);
+        return str;
+    }
+    bool LoadFromStorage(string demo_peerchat_visitordata)
+    {
+        if (string.IsNullOrEmpty(demo_peerchat_visitordata))
+            return false;
+        string prefix = GetStoragePrefix();
+        if (!demo_peerchat_visitordata.StartsWith(prefix))
+            return false;
+
+        try
+        {
+
+            System.IO.MemoryStream ms;
+            using (var trans = room.tdes.CreateDecryptor())
+            {
+                using (var cs = new CryptoStream(
+                new System.IO.MemoryStream(Convert.FromBase64String(demo_peerchat_visitordata.Substring(prefix.Length)))
+                , trans, CryptoStreamMode.Read))
+                {
+                    ms = new System.IO.MemoryStream();
+                    byte[] buff = new byte[4096];
+                    while (true)
+                    {
+                        int rc = cs.Read(buff, 0, buff.Length);
+                        if (rc == 0)
+                            break;
+                        ms.Write(buff, 0, rc);
+                    }
+                }
+            }
+            string strtoload = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+            string[] parts = strtoload.Split('|');
+            if (parts.Length != 4)
+                throw (new Exception("Invalid parts " + parts.Length + "," + strtoload));
+
+            if (long.Parse(parts[0]) != room.StartTime.Ticks)
+            {
+                BlazorSession.Current.ConsoleLog("invalid userinfo , room resetted");
+                return false;
+            }
+
+            string id = parts[1];
+            string name = parts[2];
+            string hash = parts[3];
+            if (hash != ComputeHash(id, name))
+                throw (new Exception("Invalid part hash " + strtoload));
+            myid = id;
+            myname = name;
+            return true;
+        }
+        catch (Exception x)
+        {
+            BlazorSession.Current.ExceptionReport(x);
+            return false;
+        }
+    }
+
+    void SaveToStorage()
+    {
+        System.IO.MemoryStream ms = new System.IO.MemoryStream();
+
+        string strtosave = room.StartTime.Ticks + "|" + myid + "|" + myname + "|" + ComputeHash(myid, myname);
+        byte[] data = System.Text.Encoding.UTF8.GetBytes(strtosave);
+
+        using (var trans = room.tdes.CreateEncryptor())
+        {
+            using (var cs = new CryptoStream(ms, trans, CryptoStreamMode.Write))
+            {
+                cs.Write(data, 0, data.Length);
+            }
+        }
+
+        strtosave = GetStoragePrefix() + Convert.ToBase64String(ms.ToArray());
+        BlazorSession.Current.EvalCode("console.log(arguments[0]);sessionStorage.setItem('demo_peerchat_visitordata',arguments[0]);", strtosave);
+        BlazorSession.Current.FlushToClient();
+
+    }
+
+    void _Chat_Join(string demo_peerchat_visitordata)
+    {
+
+        lock (globalchatroomdict)
+        {
+            if (!globalchatroomdict.TryGetValue(IPAddress, out room))
+            {
+                room = new ChatRoom(IPAddress);
+                globalchatroomdict[IPAddress] = room;
+            }
+        }
+
+        if (!LoadFromStorage(demo_peerchat_visitordata))
+        {
+            int userid = room.NextUserId++;
+            myid = "visitor:" + userid;
+            myname = "Visitor" + userid;
+            SaveToStorage();
+        }
+
+        mychatter = new Chatter(this, BlazorSession.Current, myid, myname);
+
+        lock (room)
+        {
+            foreach (Chatter visitor in room.Chatters.ToArray())
+            {
+                if (visitor.UniqueID == mychatter.UniqueID)
+                {
+                    room.Remove_Chatter(visitor);
+                    visitor.PostToThread(delegate
+                    {
+                        visitor.ChatPage._On_KickByLogin();
+                    });
+                }
+            }
+            room.Add_Chatter(mychatter);
+        }
+
+    }
+
+    void _On_KickByLogin()
+    {
+        BlazorSession.Current.Alert("Disconnected", "you have login in another place.");
+        StateHasChanged();
+    }
+
+    void _Chat_Leave()
+    {
+        if (mychatter.IsRemoved)
+            return;
+        mychatter.IsRemoved = true;
+
+        lock (room)
+        {
+            room.Remove_Chatter(mychatter);
+            if (room.Chatters.Count == 0)
+            {
+                room.StartAutoRecycle();
+            }
+        }
+
+        mychatter.Dispose();
+    }
+
+    void IDisposable.Dispose()
+    {
+        _Chat_Leave();
+    }
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _InitChatUI();
+
+        if (bdt_inputbox != null && mychatter != null && mychatter.IsRemoved)
+            bdt_inputbox.Root.Attribute_Disabled(true);
+
+        base.OnAfterRender(firstRender);
+    }
+
+    PlusControl messagepanel;
+    PlusControl inputbox;
+
+    void _InitChatUI()
+    {
+        if (bdt_messagepanel == null)
+            return;
+        if (messagepanel != null)
+            return;
+
+        messagepanel = bdt_messagepanel.Root;
+        inputbox = bdt_inputbox.Root;
+        inputbox.SetFocus(99);
+        inputbox.OnEnterKey(delegate
+        {
+            Send_Msg();
+        });
+
+        messagepanel.Create("div style='color:gray;text-align:center'").InnerText("Welcome to chat room " + room.RoomName);
+
+        int historycount = 0;
+        lock (room)
+        {
+            foreach (MsgHistory item in room.Messages)
+            {
+                _Add_Message_To_Panel(item.MsgTime, item.Visitor, item.Message, "history");
+                historycount++;
+            }
+        }
+
+        if (historycount != 0)
+        {
+            messagepanel.Create("div style='color:gray;text-align:center'").InnerText("There's " + historycount + " history messages");
+        }
+
+        SendScrollDownScript();
+
+        //BlazorSession.Current.Alert("Welcome", "Your name is " + mychatter.Name);
+    }
+
+    void Send_Msg()
+    {
+        inputbox.SetFocus(99);
+
+        if (mychatter.IsRemoved)
+        {
+            BlazorSession.Current.Alert("Disconnected", "You can't send messages any more.");
+            return;
+        }
+
+        string msg = inputbox.Value.Trim();
+        if (msg.Length == 0)
+            return;
+
+        inputbox.Value = "";
+        room.Send_Message(mychatter, msg);
+    }
+
+    void _On_Chatter_Join(Chatter visitor)
+    {
+        BlazorSession.Current.ConsoleLog("_On_Chatter_Join " + visitor.Name);
+        StateHasChanged();
+
+        if (messagepanel == null)
+            return;
+
+        PlusControl div = messagepanel.Create("div style='color:darkgreen;'").InnerText("[" + visitor.Name + "] Join +++");
+        SendScrollDownScript();
+    }
+    void _On_Chatter_Leave(Chatter visitor)
+    {
+        BlazorSession.Current.ConsoleLog("_On_Chatter_Leave " + visitor.Name);
+        StateHasChanged();
+
+        if (messagepanel == null)
+            return;
+
+        PlusControl div = messagepanel.Create("div style='color:darkorange;'").InnerText("[" + visitor.Name + "] Leave ---");
+        SendScrollDownScript();
+    }
+    void _On_Message(DateTime msgtime, Chatter visitor, string msg)
+    {
+        BlazorSession.Current.ConsoleLog("_On_Message " + visitor.Name, msg);
+        StateHasChanged();
+
+        if (messagepanel == null)
+            return;
+
+        _Add_Message_To_Panel(msgtime, visitor, msg, "live");
+    }
+
+    void _Add_Message_To_Panel(DateTime msgtime, Chatter visitor, string msg, string type)
+    {
+        PlusControl div = messagepanel.Create("div");
+
+        if (visitor.UniqueID == mychatter.UniqueID) //use uid to compare , for history
+        {
+            div.CssText("color:red;font-weight:bold");
+        }
+
+        div.Create("span style='display:inline-block;vertical-align:middle;margin:0 3px;color:#ccc;'")
+        .InnerText("[" + msgtime.ToString("HH:mm:ss") + "]");
+
+        div.Create("span style='display:inline-block;vertical-align:middle;margin:0 3px;'")
+        .InnerText(visitor.Name + ":");
+
+        div.Create("span style='display:inline-block;vertical-align:middle;margin:0 3px;word-break:break-all'")
+        .InnerText(msg);
+
+
+        if (type != "history") SendScrollDownScript();
+    }
+
+    void SendScrollDownScript()
+    {
+        messagepanel.Eval("this.scrollTop=this.scrollHeight");
+    }
+}
