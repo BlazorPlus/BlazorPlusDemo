@@ -11,7 +11,7 @@ Welcome to your new app.
 <br />
 <br />
 
-This the basic demo for BlazorPlus
+This is the basic demo for BlazorPlus
 <br />
 Demo source  : <a href="https://github.com/BlazorPlus/BlazorPlusDemo" target="_blank">https://github.com/BlazorPlus/BlazorPlusDemo</a>
 <br />
@@ -46,7 +46,7 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
 		for (int i = 0; i < 5; i++)
 		{
 			sw.Restart();
-			await BlazorSession.Current.JSRuntime.InvokeVoidAsync("console.log", "ping");
+			await BlazorSession.Current.EvalCodeAsync("console.log('ping')");
 			msgs.Add(sw.ElapsedMilliseconds.ToString() + " ms");
 			BlazorSession.Current.Toast(string.Join("\r\n", msgs.ToArray()), i == 4 ? 1000 : 3000, "mynetworkinfo");
 		}
@@ -60,7 +60,7 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
 </p>
 
 @*<h4>Special samples:</h4>
-<a href="/Test_PeerChat">Chat Room</a>*@
+	<a href="/Test_PeerChat">Chat Room</a>*@
 
 <br />
 <br />

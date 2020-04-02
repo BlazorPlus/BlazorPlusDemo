@@ -5,9 +5,13 @@
 Your message :
 <BlazorDomTree @ref="dt"></BlazorDomTree>
 
+<div>@searchresult</div>
+
 @code{
 
 	BlazorDomTree dt;
+
+	string searchresult;
 
 	protected override void OnAfterRender(bool first)
 	{
@@ -18,6 +22,14 @@ Your message :
 		inp1.OnChanging(delegate
 		{
 			BlazorSession.Current.Toast("Your are typing '" + inp1.Value + "'", 1000, "typinginfo");
+
+			searchresult = "No result for [" + inp1.Value + "]";
+			StateHasChanged();
+		});
+
+		inp1.OnChange(delegate
+		{
+			BlazorSession.Current.Toast("Commit '" + inp1.Value + "'", 1000, "typinginfo");
 		});
 	}
 }

@@ -3,8 +3,9 @@
 @{ BlazorSession.Current["codename"] = "Demo_CustomDialog"; }
 
 <h3>
-	Click the sample buttons to learn how to use BlazorDialog
+	BlazorDialog
 </h3>
+<p>All dialogs support ESC/BACK button</p>
 
 <table border="1" cellpadding="8">
 	<tr>
@@ -60,7 +61,7 @@
 		BlazorDialog dlg = null;
 		RenderFragment rf = __builder =>
 		{
-		<div style="width:50%;height:50%;text-align:center;background-color:white;padding:32px;border-radius:5px;box-shadow:#cccc 1px 1px 6px">
+		<div style="min-width:320px;width:50%;height:50%;text-align:center;background-color:white;padding:32px;border-radius:5px;box-shadow:#cccc 1px 1px 6px">
 			Press ESC or click browser BACK button to close this dialog;
 			<br />
 			<br />

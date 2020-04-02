@@ -88,43 +88,40 @@
 <br />
 <fieldset>
 	<legend>JavaScript:</legend>
-	<div>Interactive with browser script</div>
-	<button @onclick='()=>BlazorSession.Current.EvalCode("alert(arguments[0])","This is argument 0")'>EvalCode</button>
-	<button @onclick='DoInvokeFunction'>InvokeFunction</button>
-	<button @onclick='DoGetLocalSotrange'>JSRuntime Read</button>
-	<button @onclick='DoTestClientCallback'>JSRuntime Callback</button>
-	<a href="/Demo_JavaScript">More JavaScript Sample</a>
+	<div>Interactive with browser script. <a href="/Demo_JavaScript" style="display:none;">More JavaScript Sample</a></div>
+	<button @onclick='DoEvalCode'>EvalCode</button>
+	<button @onclick='DoSetLocalStorage'>localStorage.setItem</button>
+	<button @onclick='DoGetLocalSotrange'>localStorage.getItem</button>
+	<button @onclick='DoTestClientCallback'>Client Callback</button>
+	
 </fieldset>
 
 @code{
-
-	void DoInvokeFunction()
+	void DoEvalCode()
+	{
+		//use arguments array
+		BlazorSession.Current.EvalCode("alert(arguments[0])", "This is argument 0");
+	}
+	void DoSetLocalStorage()
 	{
 		//Use InvokeFunction to pass parameters more easily
 		BlazorSession.Current.InvokeFunction("localStorage.setItem", "demo-index-value", DateTime.Now.Ticks.ToString());
-		BlazorSession.Current.Alert("Done", "Click 'JSRuntime Read' to get result");
+		BlazorSession.Current.Alert("Done", "demo-index-value has been added to localStorage");
 	}
 
 	async void DoGetLocalSotrange()
 	{
-		string value = await BlazorSession.Current.JSRuntime.InvokeAsync<string>
-			("eval", "(function(){console.log('get localStorage'); return localStorage.getItem('demo-index-value')})()");
+		string value = await BlazorSession.Current.EvalCodeAsync<string>("console.log('get localStorage'); return localStorage.getItem('demo-index-value')");
 		long ticks;
 		if (!long.TryParse(value, out ticks))
-			BlazorSession.Current.Alert("Error", "You never click the 'InvokeFunction' button yet");
+		{
+			BlazorSession.Current.Alert("Error", "You never set the 'demo-index-value'");
+		}
 		else
 		{
 			TimeSpan ts = DateTime.Now - new DateTime(ticks);
-			BlazorSession.Current.Alert("demo-index-value", "You clicked 'InvokeFunction' button " + Math.Ceiling(ts.TotalSeconds) + " seconds ago\r\nReload this page and try again.");
+			BlazorSession.Current.Alert("demo-index-value", "You set 'demo-index-value' " + Math.Ceiling(ts.TotalSeconds) + " seconds ago\r\nReload this page and try again.");
 		}
-	}
-
-	DotNetObjectReference<Demo_BlazorSession> dno;
-
-	void IDisposable.Dispose()
-	{
-		if (dno != null)
-			dno.Dispose();
 	}
 
 	void DoTestClientCallback()
@@ -147,6 +144,14 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 },800);
 "
 		, dno);
+	}
+
+	DotNetObjectReference<Demo_BlazorSession> dno;
+
+	void IDisposable.Dispose()
+	{
+		if (dno != null)
+			dno.Dispose();
 	}
 
 	[Microsoft.JSInterop.JSInvokable()]

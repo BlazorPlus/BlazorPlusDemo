@@ -1,0 +1,23 @@
+﻿@page "/Test_Controls"
+
+@{ 
+	if(MyEditContext==null)
+	{
+		MyEditContext = new EditContext(this);
+	}
+}
+
+<EditForm Context="hello" EditContext="MyEditContext">
+	<InputText @bind-Value="Title" />
+</EditForm>
+
+@code
+{
+
+	public EditContext MyEditContext;
+
+	public string Title{get;set;}="Yes, It's";
+
+
+
+}

@@ -2,7 +2,8 @@
 
 @{ BlazorSession.Current["codename"] = "Demo_BaseDialog"; }
 
-<h1>Dialog</h1>
+<h3>Dialog</h3>
+<p>All dialogs support ESC/BACK button</p>
 
 <button class="btn btn-primary" @onclick="ShowAlert">Alert</button>
 &nbsp;&nbsp;&nbsp;
@@ -28,200 +29,202 @@
 
 @code {
 
-    string debugmsg = "";
+	string debugmsg = "";
 
-    void ShowAlert()
-    {
-        debugmsg = "ShowAlert ";// + new System.Diagnostics.StackTrace();
+	void ShowAlert()
+	{
+		debugmsg = "ShowAlert ";// + new System.Diagnostics.StackTrace();
 
-        BlazorSession.Current.Alert("MyAlert", "It's a good day for code.", () =>
-        {
-            debugmsg = "Alert Return ";
-            StateHasChanged();
-        });
-    }
+		BlazorSession.Current.Alert("MyAlert", "It's a good day for code.", () =>
+		{
+			debugmsg = "Alert Return ";
+			StateHasChanged();
+		});
+	}
 
-    async Task ShowAlertAsync() //recommanded way
-    {
-        await BlazorSession.Current.AlertAsync(new UIDialogOption { Title = "MyAlert", Message = "It's a good day for code." });
-        debugmsg = "Alert Return";
-    }
+	async Task ShowAlertAsync() //recommanded way
+	{
+		await BlazorSession.Current.AlertAsync(new UIDialogOption { Title = "MyAlert", Message = "It's a good day for code." });
+		debugmsg = "Alert Return";
+	}
 
-    async Task ShowAlertTemplate()
-    {
-        var option = new UIDialogOption();
+	async Task ShowAlertTemplate()
+	{
+		var option = new UIDialogOption();
 
-        option.TitleTemplate = __builder =>
-        {
-        <span>My<b style="font-size:1.2em;">Bold</b>Title</span>
-        };
+		option.TitleTemplate = __builder =>
+		{
+		<span>My<b style="font-size:1.2em;">Bold</b>Title</span>
+		};
 
-        option.MessageTemplate = __builder =>
-        {
-        <p>
-            <span>It's a good day for <span style="font-size:1.2em;color:red">code</span>.</span>
-        </p>
-        <p>
-            <buton class="btn btn-info" @onclick="InnerClick">Click here for more information</buton>
-        </p>
-        <p>
-            Relative link :<a target="_blank" href="https://www.microsoft.com/">Microsoft</a>
-        </p>
-        };
+		option.MessageTemplate = __builder =>
+		{
+		<p>
+			@DateTime.Now
+			<br />
+			<span>It's a good day for <span style="font-size:1.2em;color:red">code</span>. </span>
+		</p>
+		<p>
+			<buton class="btn btn-info" @onclick="InnerClick">Click here for more information</buton>
+		</p>
+		<p>
+			Relative link :<a target="_blank" href="https://www.microsoft.com/">Microsoft</a>
+		</p>
+		};
 
-        void InnerClick()
-        {
-            BlazorSession.Current.Alert("DEMO", "more information...");
-        }
+		void InnerClick()
+		{
+			BlazorSession.Current.Alert("DEMO", "more information...");
+		}
 
-        await BlazorSession.Current.AlertAsync(option);
-    }
+		await BlazorSession.Current.AlertAsync(option);
+	}
 
-    void ShowConfirm()
-    {
+	void ShowConfirm()
+	{
 
-        BlazorSession.Current.Confirm("Question", "Are you sure?", result =>
-        {
-            debugmsg = "";
-            if (result == null)
-                debugmsg = "You cancelled it";
-            else if (result == true)
-                debugmsg = "You clicked OK";
-            else if (result == false)
-                debugmsg = "You clicked Cancel";
-            StateHasChanged();
-            BlazorSession.Current.Alert("Result", debugmsg);
-        });
+		BlazorSession.Current.Confirm("Question", "Are you sure?", result =>
+		{
+			debugmsg = "";
+			if (result == null)
+				debugmsg = "You cancelled it";
+			else if (result == true)
+				debugmsg = "You clicked OK";
+			else if (result == false)
+				debugmsg = "You clicked Cancel";
+			StateHasChanged();
+			BlazorSession.Current.Alert("Result", debugmsg);
+		});
 
-    }
+	}
 
-    async Task ShowConfirmAsync()   //recommanded way
-    {
-        bool? result = await BlazorSession.Current.ConfirmAsync(new UIDialogOption { Title = "Question", Message = "Are you sure?" });
-        if (result == null)
-            debugmsg = "You cancelled it";
-        else if (result == true)
-            debugmsg = "You clicked OK";
-        else if (result == false)
-            debugmsg = "You clicked Cancel";
-        BlazorSession.Current.Alert("Result", debugmsg);
-    }
+	async Task ShowConfirmAsync()   //recommanded way
+	{
+		bool? result = await BlazorSession.Current.ConfirmAsync(new UIDialogOption { Title = "Question", Message = "Are you sure?" });
+		if (result == null)
+			debugmsg = "You cancelled it";
+		else if (result == true)
+			debugmsg = "You clicked OK";
+		else if (result == false)
+			debugmsg = "You clicked Cancel";
+		BlazorSession.Current.Alert("Result", debugmsg);
+	}
 
-    void ShowConfirmYes()
-    {
-        debugmsg = "Confirm yes only handle OK";
-        StateHasChanged();
-        var option = BlazorSession.Current.ConfirmYes("Question", "Confirm yes only handle OK , are you sure?", () =>  //use ()=> to prevent typing problem
-        {
-            debugmsg = "You clicked DELETE";
-            StateHasChanged();
-            BlazorSession.Current.Alert("Result", debugmsg);
-        });
-        option.OKType = UIDialogOptionActionType.Danger;
-        option.OKText = "DELETE";
-    }
+	void ShowConfirmYes()
+	{
+		debugmsg = "Confirm yes only handle OK";
+		StateHasChanged();
+		var option = BlazorSession.Current.ConfirmYes("Question", "Confirm yes only handle OK , are you sure?", () =>  //use ()=> to prevent typing problem
+		{
+			debugmsg = "You clicked DELETE";
+			StateHasChanged();
+			BlazorSession.Current.Alert("Result", debugmsg);
+		});
+		option.OKType = UIDialogOptionActionType.Danger;
+		option.OKText = "DELETE";
+	}
 
-    void ShowPrompt()
-    {
-        BlazorSession.Current.Prompt("Your Name", "Please type your name..", "", str =>
-        {
-            debugmsg = "You cancelled it";
-            if (str != null)
-                debugmsg = "You typed [" + str + "]";
-            StateHasChanged();
-            BlazorSession.Current.Alert("Result", debugmsg);
-        });
-    }
+	void ShowPrompt()
+	{
+		BlazorSession.Current.Prompt("Your Name", "Please type your name..", "", str =>
+		{
+			debugmsg = "You cancelled it";
+			if (str != null)
+				debugmsg = "You typed [" + str + "]";
+			StateHasChanged();
+			BlazorSession.Current.Alert("Result", debugmsg);
+		});
+	}
 
-    async Task ShowPromptAsync()
-    {
-        string str = await BlazorSession.Current.PromptAsync(new UIDialogOption { Title = "Your Name", Message = "Please type your name.." });
-        debugmsg = "You cancelled it";
-        if (str != null)
-            debugmsg = "You typed [" + str + "]";
-        BlazorSession.Current.Alert("Result", debugmsg);
-    }
+	async Task ShowPromptAsync()
+	{
+		string str = await BlazorSession.Current.PromptAsync(new UIDialogOption { Title = "Your Name", Message = "Please type your name.." });
+		debugmsg = "You cancelled it";
+		if (str != null)
+			debugmsg = "You typed [" + str + "]";
+		BlazorSession.Current.Alert("Result", debugmsg);
+	}
 
-    async Task ShowPromptValidatorAsync()
-    {
-        string title = "Your Name";
-        string defmsg = "Please type your name..";
-        var option = new UIDialogOption { Title = title, Message = defmsg };
-        option.ValueValidator = obj =>
-        {
-            string str = Convert.ToString(obj);
-            if (string.IsNullOrWhiteSpace(str))
-            {
-                option.OKText = "Miss";
-                option.Title = title;
-                option.Message = defmsg;
-                return false;
-            }
+	async Task ShowPromptValidatorAsync()
+	{
+		string title = "Your Name";
+		string defmsg = "Please type your name..";
+		var option = new UIDialogOption { Title = title, Message = defmsg };
+		option.ValueValidator = obj =>
+		{
+			string str = Convert.ToString(obj);
+			if (string.IsNullOrWhiteSpace(str))
+			{
+				option.OKText = "Miss";
+				option.Title = title;
+				option.Message = defmsg;
+				return false;
+			}
 
-            foreach (char c in str)
-            {
-                if (char.IsLetterOrDigit(c))
-                    continue;
-                switch (c)
-                {
-                    case ' ':
-                    case '.':
-                        break;
-                    default:
-                        option.OKText = "Invalid";
-                        option.Title = "Invalid Char";
-                        option.Message = "Don't use character [" + c + "]";
-                        return false;
-                }
-            }
+			foreach (char c in str)
+			{
+				if (char.IsLetterOrDigit(c))
+					continue;
+				switch (c)
+				{
+					case ' ':
+					case '.':
+						break;
+					default:
+						option.OKText = "Invalid";
+						option.Title = "Invalid Char";
+						option.Message = "Don't use character [" + c + "]";
+						return false;
+				}
+			}
 
-            str = str.Trim();
+			str = str.Trim();
 
-            switch (str.ToLower())
-            {
-                case "guest":
-                case "system":
-                case "administrator":
-                case "admin":
-                case "god":
-                case "user":
-                case "anonymous":
-                case "foo":
-                case "hello":
-                case "world":
-                    option.OKText = "Invalid";
-                    option.Title = "Taken";
-                    option.Message = "[" + str + "] is used by another guy.";
-                    return false;
-            }
+			switch (str.ToLower())
+			{
+				case "guest":
+				case "system":
+				case "administrator":
+				case "admin":
+				case "god":
+				case "user":
+				case "anonymous":
+				case "foo":
+				case "hello":
+				case "world":
+					option.OKText = "Invalid";
+					option.Title = "Taken";
+					option.Message = "[" + str + "] is used by another guy.";
+					return false;
+			}
 
-            if (str.Length < 3)
-            {
-                option.OKText = "Invalid";
-                option.Title = "Too Short";
-                option.Message = "Require at lease 3 characters";
-                return false;
-            }
+			if (str.Length < 3)
+			{
+				option.OKText = "Invalid";
+				option.Title = "Too Short";
+				option.Message = "Require at lease 3 characters";
+				return false;
+			}
 
-            if (str.Length > 16)
-            {
-                option.OKText = "Invalid";
-                option.Title = "Too Long";
-                option.Message = "Require at most 16 characters";
-                return false;
-            }
+			if (str.Length > 16)
+			{
+				option.OKText = "Invalid";
+				option.Title = "Too Long";
+				option.Message = "Require at most 16 characters";
+				return false;
+			}
 
-            option.OKText = "Accept";
-            option.Title = title;
-            option.Message = "The name IS OK";
+			option.OKText = "Accept";
+			option.Title = title;
+			option.Message = "The name IS OK";
 
-            return true;
-        };
+			return true;
+		};
 
-        string str = await BlazorSession.Current.PromptAsync(option);
-        debugmsg = "You cancelled it";
-        if (str != null)
-            debugmsg = "You typed [" + str + "]";
-        BlazorSession.Current.Alert("Result", debugmsg);
-    }
+		string str = await BlazorSession.Current.PromptAsync(option);
+		debugmsg = "You cancelled it";
+		if (str != null)
+			debugmsg = "You typed [" + str + "]";
+		BlazorSession.Current.Alert("Result", debugmsg);
+	}
 }

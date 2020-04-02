@@ -1,0 +1,178 @@
+﻿@page "/Demo_DomTree"
+
+@{ BlazorSession.Current["codename"] = "Demo_DomTree"; }
+
+
+<h3 style="color:darkcyan">&lt;BlazorDomTree /&gt;</h3>
+<p>&lt;BlazorDomTree /&gt; provide API to let developers control the DOM directly like jQuery </p>
+<p>Now developers can make UI in classic mode with C# code </p>
+<img src="/images/graph_about_state.jpg" style="max-width:80%" />
+<hr />
+<p>At first , it's an element :</p>
+<table border="1" cellpadding="10">
+	<tr style="text-align:center;"><td style="width:186px">View</td><td>Code</td></tr>
+	<tr>
+		<td>
+			<BlazorDomTree TagName="div" style="display:inline-block;padding:20px 40px;border:solid 1px red;background-color:#eee;color:red">Hello World</BlazorDomTree>
+		</td>
+		<td>
+			&lt;BlazorDomTree TagName="div" style="display:inline-block;padding:20px 40px;border:solid 1px red;background-color:#eee;color:red"&gt;Hello World&lt;/BlazorDomTree&gt;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<BlazorDomTree TagName="textarea" style="width:165px;height:60px">Type your message..</BlazorDomTree>
+		</td>
+		<td>
+			&lt;BlazorDomTree TagName="textarea" style="width:165px;height:60px"&gt;Type your message..&lt;/BlazorDomTree&gt;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<BlazorDomTree TagName="input" type="password" placeholder="Your password" style="width:165px;" />
+		</td>
+		<td>
+			&lt;BlazorDomTree TagName="input" type="password" placeholder="Your password" style="width:165px;" /&gt;
+		</td>
+	</tr>
+</table>
+
+<br />
+
+
+
+
+
+<div style="margin:5px 0">Use 'TagInitScript' to control the element in client side :</div>
+
+<BlazorDomTree TagName="canvas" style="border:solid 1px blue;" width="502" height="202"
+			   TagInitScript="
+var canvas=this;
+var ctx=canvas.getContext('2d');
+ctx.fillStyle='blue';
+ctx.strokeStyle='red';
+ctx.lineWidth=2;
+function onmousemove(e){
+	var bcr=canvas.getBoundingClientRect();
+	var x=e.clientX-bcr.left;
+	var y=e.clientY-bcr.top;
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	ctx.beginPath();
+	ctx.moveTo(0,y);
+	ctx.lineTo(canvas.width,y);
+	ctx.moveTo(x,0);
+	ctx.lineTo(x,canvas.height);
+	ctx.stroke();
+}
+document.addEventListener('mousemove',onmousemove)
+canvas.dodispose=function(){
+	document.removeEventListener('mousemove',onmousemove);
+	console.log('canvas released')
+}
+console.log('canvas attached')
+			   " TagDisposeScript="this.dodispose();" />
+
+
+
+
+
+
+
+<div style="margin:5px 0">Build your dynamic data UI easily</div>
+
+<BlazorDomTree TagName="div" OnRootReady="Initialize_bdt_div1" style="padding:10px;border:solid 1px blue;min-height:202px;" />
+
+@code{
+
+	void Initialize_bdt_div1(BlazorDomTree bdt)
+	{
+		BlazorSession.Current.ConsoleLog("_bdt_div1 attach");
+		bdt.Disposed += delegate
+		{
+			BlazorSession.Current.ConsoleLog("_bdt_div1 detach");
+		};
+
+		PlusControl div = bdt.Root;
+		div.Create("div style='font-weight:bold'").InnerText(typeof(ComponentBase).Assembly.GetName().Name);
+		div.Create("hr style='margin:0.5em 0'");
+		CreateComponentTree(div, "");
+	}
+
+	void CreateComponentTree(PlusControl div, string prefix)
+	{
+		List<string> subns = new List<string>();
+		List<Type> types = new List<Type>();
+
+		foreach (Type type in typeof(ComponentBase).Assembly.GetTypes())
+		{
+			if (prefix != "" && !type.FullName.StartsWith(prefix))
+				continue;
+
+			string restname = type.FullName.Substring(prefix.Length);
+
+			int pos = restname.IndexOf('.');
+			if (pos == -1)
+			{
+				types.Add(type);
+				continue;
+			}
+
+			string leftname = prefix + restname.Substring(0, pos);
+
+			if (!subns.Contains(leftname)) subns.Add(leftname);
+		}
+
+
+		PlusControl table = div.Create("table style='cursor:default;'");
+
+		foreach (string ns in subns)
+		{
+			PlusControl tr = table.Create("tr");
+			PlusControl td0 = tr.Create("td style='width:20px;'");
+			PlusControl icon = td0.Create("span class='oi oi-plus'");
+			PlusControl spantext = tr.Create("td").Create("span").InnerText(ns.Split('.').Last());
+
+			PlusControl tr1 = table.Create("tr style='display:none'");
+			tr1.Create("td");
+			PlusControl subtd = tr1.Create("td");
+
+			void Toggle()
+			{
+				if (tr1.GetStyle("display") == "none")
+				{
+					if (subtd.GetChildCount() == 0)
+						CreateComponentTree(subtd, ns + ".");/*Recursive*/
+
+					icon.CssClass("oi oi-minus");
+					tr1.SetStyle("display", "");
+				}
+				else
+				{
+					icon.CssClass("oi oi-plus");
+					tr1.SetStyle("display", "none");
+				}
+			}
+
+			if (prefix == "" || prefix == "Microsoft.")
+				Toggle();
+
+			new PlusControl[] { icon, spantext }.OnClick(delegate
+			{
+				Toggle();
+			});
+
+		}
+		foreach (Type t in types)
+		{
+			PlusControl tr = table.Create("tr");
+			PlusControl td0 = tr.Create("td style='width:20px;'");
+			PlusControl icon = td0.Create("span class='oi oi-code'");
+			tr.Create("td").Create("span style='display:inline-block;cursor:pointer")
+			.InnerText(t.Name)
+			.OnClick(delegate
+			{
+				BlazorSession.Current.Toast(t.FullName + " contains " + t.GetMembers().Length + " members", 2000, "typeinfo");
+			});
+		}
+	}
+}
