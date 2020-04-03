@@ -1,21 +1,21 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="sidebar">
-    <NavMenu />
+	<NavMenu />
 </div>
 
 <div class="main">
-    <div class="top-row px-4" style="z-index:1">
+	<div class="top-row px-4" style="z-index:1">
 
-        <button @onclick="ShowCode">Show Code</button>
+		<button @onclick="ShowCode">Show Code</button>
 
-    </div>
+	</div>
 
-    <div class="content px-4" style="padding-bottom:88px">
-        <CascadingValue Value="this">
-            @Body
-        </CascadingValue>
-    </div>
+	<div class="content px-4" style="padding-bottom:88px">
+		<CascadingValue Value="this">
+			@Body
+		</CascadingValue>
+	</div>
 </div>
 
 
@@ -26,90 +26,90 @@
 
 @code
 {
-    protected override void OnAfterRender(bool firstRender)
-    {
-        string codename = (string)BlazorSession.Current["codename"];
-        if (codename != null)
-        {
-            urimap[nav.Uri.ToString()] = codename;
-            BlazorSession.Current["codename"] = null;
-        }
-        base.OnAfterRender(firstRender);
+	protected override void OnAfterRender(bool firstRender)
+	{
+		string codename = (string)BlazorSession.Current["codename"];
+		if (codename != null)
+		{
+			urimap[nav.Uri.ToString()] = codename;
+			BlazorSession.Current["codename"] = null;
+		}
+		base.OnAfterRender(firstRender);
 
-    }
+	}
 
-    Dictionary<string, string> urimap = new Dictionary<string, string>();
+	Dictionary<string, string> urimap = new Dictionary<string, string>();
 
-    void ShowCode()
-    {
-        string codename;
-        if (!urimap.TryGetValue(nav.Uri.ToString(), out codename))
-        {
-            BlazorSession.Current.Toast("miss codename");
-            return;
-        }
+	void ShowCode()
+	{
+		string codename;
+		if (!urimap.TryGetValue(nav.Uri.ToString(), out codename))
+		{
+			BlazorSession.Current.Toast("miss codename");
+			return;
+		}
 
-        _ShowCode(codename);
-    }
+		_ShowCode(codename);
+	}
 
-    void _ShowCode(string codename)
-    {
-        string filepath = System.IO.Path.Combine(whe.ContentRootPath, "Pages/" + codename + ".razor");
-        if (!System.IO.File.Exists(filepath))
-        {
-            BlazorSession.Current.Alert("Error", "Unable to find file " + codename + ".razor");
-            return;
-        }
+	void _ShowCode(string codename)
+	{
+		string filepath = System.IO.Path.Combine(whe.ContentRootPath, "Pages/" + codename + ".razor");
+		if (!System.IO.File.Exists(filepath))
+		{
+			BlazorSession.Current.Alert("Error", "Unable to find file " + codename + ".razor");
+			return;
+		}
 
-        string linkurl = "https://github.com/BlazorPlus/BlazorPlusDemo/blob/master/BlazorPlusDemo/Pages/" + codename + ".razor";
+		string linkurl = "https://github.com/BlazorPlus/BlazorPlusDemo/blob/master/BlazorPlusDemo/Pages/" + codename + ".razor";
 
-        BlazorDialog dlg = null;
-        RenderFragment rf = __builder =>
-        {
+		BlazorDialog dlg = null;
+		RenderFragment rf = __builder =>
+		{
 
-        <div style="display:flex;flex-direction:column;;width:80%;height:80%;background-color:white;padding:2px;border-radius:5px;box-shadow:#cccc 1px 1px 6px">
-            <style>
-                .mainlayout_span_close {
-                    font-size: 40px;
-                    width: 20px;
-                    height: 20px;
-                    line-height: 20px;
-                    margin: 3px;
-                    cursor: default;
-                }
+		<div style="display:flex;flex-direction:column;;width:80%;height:80%;background-color:white;padding:2px;border-radius:5px;box-shadow:#cccc 1px 1px 6px">
+			<style>
+				.mainlayout_span_close {
+					font-size: 40px;
+					width: 20px;
+					height: 20px;
+					line-height: 20px;
+					margin: 3px;
+					cursor: default;
+				}
 
-                    .mainlayout_span_close:hover {
-                        color: blue;
-                    }
-            </style>
-            <div style="display:flex;"><span style="flex:99">@codename</span><span class="mainlayout_span_close" @onclick="()=> { dlg.Close(); }">×</span></div>
-            <textarea style="resize:none;width:100%;flex:99;">@System.IO.File.ReadAllText(filepath)</textarea>
-            <div style="overflow:hidden;text-overflow:ellipsis"><a href="@linkurl" target="_blank">@linkurl</a></div>
-        </div>
-        };
+					.mainlayout_span_close:hover {
+						color: blue;
+					}
+			</style>
+			<div style="display:flex;"><span style="flex:99">@codename</span><span class="mainlayout_span_close" @onclick="()=> { dlg.Close(); }">×</span></div>
+			<textarea style="resize:none;width:100%;flex:99;padding:5px;padding-bottom:25px">@System.IO.File.ReadAllText(filepath)</textarea>
+			<div style="overflow:hidden;text-overflow:ellipsis"><a href="@linkurl" target="_blank">@linkurl</a></div>
+		</div>
+		};
 
-        Action<BlazorDialog> dlginit = argdlg =>
-        {
-            dlg = argdlg;
-            dlg.CancelHandler = delegate
-            {
-                dlg.Close();
-            };
-        };
+		Action<BlazorDialog> dlginit = argdlg =>
+		{
+			dlg = argdlg;
+			dlg.CancelHandler = delegate
+			{
+				dlg.Close();
+			};
+		};
 
-        BlazorSession.Current.ShowDialog(rf, dlginit);
-    }
+		BlazorSession.Current.ShowDialog(rf, dlginit);
+	}
 
 
-    static public void ShowCode(string codename)
-    {
-        MainLayout layout = (MainLayout)BlazorSession.Current["MainLayout"];
-        layout._ShowCode(codename);
-    }
-    static public void ShowCurrentCode()
-    {
-        MainLayout layout = (MainLayout)BlazorSession.Current["MainLayout"];
-        layout.ShowCode();
-    }
+	static public void ShowCode(string codename)
+	{
+		MainLayout layout = (MainLayout)BlazorSession.Current["MainLayout"];
+		layout._ShowCode(codename);
+	}
+	static public void ShowCurrentCode()
+	{
+		MainLayout layout = (MainLayout)BlazorSession.Current["MainLayout"];
+		layout.ShowCode();
+	}
 
 }

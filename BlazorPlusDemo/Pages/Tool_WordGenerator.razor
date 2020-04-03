@@ -1,0 +1,61 @@
+﻿@page "/Tool_WordGenerator"
+
+@{ BlazorSession.Current["codename"] = "Tool_WordGenerator"; }
+
+<BlazorDomTree OnRootReady="bdtready" />
+
+@code
+{
+	void bdtready(BlazorDomTree bdt)
+	{
+		PlusControl div1 = bdt.Root.Create("div");
+		div1.Create("label style='display:inline-block;width:100px").InnerText("Password:");
+		PlusControl inpword = div1.Create("input type='text'");
+		PlusControl button = div1.Create("button").InnerText("Generate");
+		PlusControl resultdiv = bdt.Root.Create("div");
+
+		inpword.SetFocus(99);
+
+		void AppendLine(string text, string value)
+		{
+			PlusControl linediv = resultdiv.Create("div");
+			linediv.Create("label style='display:inline-block;width:100px'").InnerText(text);
+			linediv.Create("input readonly type='text' style='width:330px'").Value(value);
+			linediv.Create("button").InnerText("Copy").Attribute("onclick", @"
+var input=this.parentNode.querySelector('input');
+input.select();
+document.execCommand('copy');
+Toast(this.getAttribute('txt')+' Copy OK',2000,'toast_copy');
+").Attribute("txt", text);
+		}
+
+		void GenPwd()
+		{
+			resultdiv.ClearChildren();
+
+			string pwd = inpword.Value;
+			if (pwd.Length == 0)
+			{
+				resultdiv.InnerHTML("<span style='color:red'>miss password</span>");
+				return;
+			}
+
+			string salt = Guid.NewGuid().ToString();
+			string hash = CalcPasswordHash(pwd, salt);
+
+			AppendLine("Salt:", salt);
+			AppendLine("Hash:", hash);
+		}
+
+		inpword.OnEnterKey(delegate { GenPwd(); });
+		button.OnClick(delegate { GenPwd(); });
+	}
+
+	static public string CalcPasswordHash(string password, string salt)
+	{
+		string code = "[" + password + "]{" + salt + "}";
+		var sha1 = System.Security.Cryptography.SHA1.Create();
+		byte[] hash = sha1.ComputeHash(System.Text.Encoding.UTF8.GetBytes(code));
+		return Convert.ToBase64String(hash);
+	}
+}

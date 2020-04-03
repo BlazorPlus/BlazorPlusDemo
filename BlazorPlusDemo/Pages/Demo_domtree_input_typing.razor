@@ -2,34 +2,42 @@
 
 @{ BlazorSession.Current["codename"] = "Demo_domtree_input_typing"; }
 
-Your message :
-<BlazorDomTree @ref="dt"></BlazorDomTree>
-
+Type keyword to search :
+<BlazorDomTree OnRootReady="bdtready" />
 <div>@searchresult</div>
 
-@code{
-
-	BlazorDomTree dt;
-
+@code
+{
 	string searchresult;
 
-	protected override void OnAfterRender(bool first)
+	void bdtready(BlazorDomTree bdt)
 	{
-		if (!first)
-			return;
 
-		PlusControl inp1 = dt.Root.Create("input type='text'");
+		PlusControl inp1 = bdt.Root.Create("input type='text' placeholder='search'");
+
+		inp1.SetFocus(99);
+
 		inp1.OnChanging(delegate
 		{
-			BlazorSession.Current.Toast("Your are typing '" + inp1.Value + "'", 1000, "typinginfo");
-
-			searchresult = "No result for [" + inp1.Value + "]";
+			string kw = inp1.Value.Trim();
+			if (kw.Length == 0)
+			{
+				searchresult = "Please type something..";
+				BlazorSession.Current.Toast("", 0, "typinginfo");
+			}
+			else
+			{
+				searchresult = "No result for [" + kw + "]";
+				BlazorSession.Current.Toast("Your are typing '" + kw + "'", 1000, "typinginfo");
+			}
 			StateHasChanged();
 		});
 
 		inp1.OnChange(delegate
 		{
-			BlazorSession.Current.Toast("Commit '" + inp1.Value + "'", 1000, "typinginfo");
+			searchresult = "Commit '" + inp1.Value + "'";
+			BlazorSession.Current.Toast(searchresult, 1000, "typinginfo");
+			StateHasChanged();
 		});
 	}
 }
