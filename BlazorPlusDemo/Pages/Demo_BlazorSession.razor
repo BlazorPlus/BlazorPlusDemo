@@ -1,6 +1,6 @@
 ﻿@page "/Demo_BlazorSession"
 
-@{ BlazorSession.Current["codename"] = "Demo_BlazorSession"; }
+@{ BlazorSession.Current["source_code_button_path"] = "Demo_BlazorSession"; }
 
 @* for disposing dno *@
 @implements IDisposable
@@ -8,6 +8,18 @@
 
 <h2>BlazorSession:</h2>
 <p>Each page has an unique BlazorSession object</p>
+
+
+@if (BlazorSession.Current.Browser == null)
+{
+	//wait BlazorSession.Current.Browser ready
+	BlazorSession.Current.EvalCodeAsync("console.log('hello?')").ContinueWithSession(delegate
+	{
+		StateHasChanged();
+	});
+	return;
+}
+
 
 <style>
 	legend {
@@ -23,22 +35,12 @@
 </style>
 
 <fieldset>
-	<legend>Toast:</legend>
+	<legend>Browser Toast:</legend>
 	<div>Say something witout clicking OK ,all previous items with same key will be cleared</div>
 	<button @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000)'>Toast</button>
 	<button @onclick='()=>BlazorSession.Current.ToastClear()'>ToastClear</button>
 	<button @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000,"mytimetoast")'>Toast With Key</button>
 	<button @onclick='()=>BlazorSession.Current.Toast("The action is failed.",2000,"mywarningtoast")'>Key as css class</button>
-</fieldset>
-
-
-<br />
-<fieldset>
-	<legend>Session Data:</legend>
-	<div>Use session data to store session scope data, components can community with each other.</div>
-	<button @onclick='DoSetSessionData'>Set Session Data</button>
-	<button @onclick='DoReadSessionData'>Read Session Data</button>
-	<button @onclick='DoGetSessionDataCount'>Get Session Data Count</button>
 </fieldset>
 
 @code{
@@ -74,7 +76,7 @@
 
 <br />
 <fieldset>
-	<legend>Console:</legend>
+	<legend>Browser Console:</legend>
 	<div>open browser console to check the logs</div>
 	<button @onclick='()=>BlazorSession.Current.ConsoleLog("Current Date Is",DateTime.Now)'>ConsoleLog</button>
 
@@ -87,13 +89,14 @@
 
 <br />
 <fieldset>
-	<legend>JavaScript:</legend>
+	<legend>Browser JavaScript:</legend>
 	<div>Interactive with browser script. <a href="/Demo_JavaScript" style="display:none;">More JavaScript Sample</a></div>
+	<div>It's not recommanded to use localStorage to store sensitive data in browser</div>
 	<button @onclick='DoEvalCode'>EvalCode</button>
 	<button @onclick='DoSetLocalStorage'>localStorage.setItem</button>
 	<button @onclick='DoGetLocalSotrange'>localStorage.getItem</button>
 	<button @onclick='DoTestClientCallback'>Client Callback</button>
-	
+
 </fieldset>
 
 @code{
@@ -170,6 +173,68 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 
 
 
+
+
+<br />
+<fieldset>
+	<legend>Server Session Data In Memory:</legend>
+	<div>Use session data to store session scope data, components can community with each other.</div>
+	<button @onclick='DoSetSessionData'>Set Session Data</button>
+	<button @onclick='DoReadSessionData'>Read Session Data</button>
+	<button @onclick='DoGetSessionDataCount'>Get Session Data Count</button>
+</fieldset>
+
+
+
+<br />
+<fieldset>
+	<legend>Server Shared Data For Browser:</legend>
+	<div>BlazorPlus save a unique key into cookie/sessionStorage/localStorage and help developer to persist data</div>
+	<div>The values are persisted for short/long time <span style="color:red;font-weight:bold">after page refreshed</span></div>
+	<div>Your browser uid is : @BlazorBrowser.Current.UniqueID</div>
+	<button @onclick='DoSetMemoryItem'>Set Memory Data</button>
+	<button @onclick='DoGetMemoryItem'>Read Memory Data</button>
+	<button @onclick='DoSetStringItemAsync'>Set Persisted String</button>
+	<button @onclick='DoGetStringItemAsync'>Get Persisted String</button>
+</fieldset>
+
+
+@code{
+	void DoSetMemoryItem()
+	{
+		//Memory Data will be resetted for 3 cases :
+		// 1 - the application restart
+		// 2 - user close all blazor pages after 10 minutes (default configuration)
+		// 3 - switch browser, use incognito mode , clear the browser storages etc...
+		BlazorBrowser.Current.SetMemoryItem("Time", DateTime.Now.ToLongTimeString());
+		BlazorSession.Current.Toast("DONE");
+	}
+	void DoGetMemoryItem()
+	{
+		BlazorSession.Current.Alert("Time", "Time = " + BlazorBrowser.Current.GetMemoryItem("Time"));
+	}
+
+	async Task DoSetStringItemAsync()
+	{
+		UIDialogOption option = new UIDialogOption();
+		option.Title = "Your message";
+		option.Message = "Please type your message to save";
+		option.DefaultValue = "Now is " + DateTime.Now.ToLongTimeString();
+		string message = await BlazorSession.Current.PromptAsync(option);
+		if (string.IsNullOrEmpty(message))
+			return;
+
+		//Check the Providers.cs of BlazorPlusDemo
+		//by the WebCustomizeSession implementation , the value is storage in BrowserStringItems folder
+
+		await BlazorBrowser.Current.SetStringItemAsync("MyMsg", message);
+		BlazorSession.Current.Toast("DONE");
+	}
+	async Task DoGetStringItemAsync()
+	{
+		BlazorSession.Current.Alert("MyMsg", "MyMsg = " + await BlazorBrowser.Current.GetStringItemAsync("MyMsg"));
+	}
+}
 
 
 <br />

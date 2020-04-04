@@ -28,11 +28,11 @@
 {
 	protected override void OnAfterRender(bool firstRender)
 	{
-		string codename = (string)BlazorSession.Current["codename"];
+		string codename = (string)BlazorSession.Current["source_code_button_path"];
 		if (codename != null)
 		{
 			urimap[nav.Uri.ToString()] = codename;
-			BlazorSession.Current["codename"] = null;
+			BlazorSession.Current["source_code_button_path"] = null;
 		}
 		base.OnAfterRender(firstRender);
 

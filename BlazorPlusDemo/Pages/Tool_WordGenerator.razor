@@ -1,6 +1,10 @@
 ﻿@page "/Tool_WordGenerator"
 
-@{ BlazorSession.Current["codename"] = "Tool_WordGenerator"; }
+@{ BlazorSession.Current["source_code_button_path"] = "Tool_WordGenerator"; }
+
+<p>
+	A sample for how to use &lt;BlazorDomTree/&gt; to build dynamic UI.
+</p>
 
 <BlazorDomTree OnRootReady="bdtready" />
 
@@ -29,7 +33,7 @@ Toast(this.getAttribute('txt')+' Copy OK',2000,'toast_copy');
 ").Attribute("txt", text);
 		}
 
-		void GenPwd()
+		void MakePwdHash()
 		{
 			resultdiv.ClearChildren();
 
@@ -47,8 +51,8 @@ Toast(this.getAttribute('txt')+' Copy OK',2000,'toast_copy');
 			AppendLine("Hash:", hash);
 		}
 
-		inpword.OnEnterKey(delegate { GenPwd(); });
-		button.OnClick(delegate { GenPwd(); });
+		inpword.OnEnterKey(delegate { MakePwdHash(); });
+		button.OnClick(delegate { MakePwdHash(); });
 	}
 
 	static public string CalcPasswordHash(string password, string salt)
