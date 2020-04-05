@@ -14,6 +14,16 @@
     <base href="~/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
+
+    @{
+        string useragent = Request.Headers["User-Agent"].FirstOrDefault();
+    }
+    @if (useragent != null && (useragent.Contains("MSIE") || useragent.Contains("Trident")))
+    {
+        //For IE11 , check https://github.com/Daddoon/Blazor.Polyfill/ for more
+        <script src="https://github.com/Daddoon/Blazor.Polyfill/releases/download/3.0.8/blazor.polyfill.min.js" type="text/javascript"></script>
+    }
+
     @*Install-BlazorPlus*@
     <script src="/_blazorplus_handler?action=script" type="text/javascript"></script>
 </head>
