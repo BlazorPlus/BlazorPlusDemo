@@ -1,0 +1,89 @@
+﻿@page "/Demo_type_number_in_image"
+
+@{ BlazorSession.Current["source_code_button_path"] = "Demo_type_number_in_image"; }
+
+<p>
+    A sample for how to show verification code and verify it.
+</p>
+
+@{
+    if (imgurl == null) MakeNewImage();
+}
+
+<img style="border:solid 1px #ccc" src="@imgurl" />
+<button @onclick="MakeNewImage">Renew</button>
+<hr />
+<div>Type the number in image</div>
+<div>
+    <BlazorDomTree TagName="input" type="text" OnRootReady="bdtready" />
+    <button @onclick="CheckIt">Check</button>
+</div>
+
+<br />
+<br />
+<br />
+<br />
+<p>
+    It's for how to write PlusControl code to get rid of EditForm
+    <br />
+    <a href="Demo_type_number_in_image_simple">Check the EditForm mode</a>
+</p>
+
+@code
+{
+    string vericode;
+    string imgurl;
+
+    PlusControl inp;
+
+    void bdtready(BlazorDomTree bdt)
+    {
+        inp = bdt.Root;
+
+        inp.OnEnterKey(delegate
+        {
+            CheckIt();
+        });
+    }
+
+    void CheckIt()
+    {
+        string msgtitle = "Failed";
+        string msg = "You typed a wrong value";
+        if (vericode == inp.Value.Trim())
+        {
+            msgtitle = "OK";
+            msg = "Yes the number is " + vericode;
+        }
+        BlazorSession.Current.Alert(msgtitle, msg, delegate
+        {
+        //In this mode , we have the reference of the input box , so we can send command to it
+        inp.SetFocus();
+        });
+    }
+
+    void MakeNewImage()
+    {
+        vericode = new Random().Next(100000, 999999).ToString();
+
+        using SkiaSharp.SKBitmap bmp = new SkiaSharp.SKBitmap(200, 80);
+
+        using (SkiaSharp.SKCanvas canvas = new SkiaSharp.SKCanvas(bmp))
+        {
+            canvas.Clear(SkiaSharp.SKColors.White);
+            using SkiaSharp.SKPaint skp = new SkiaSharp.SKPaint();
+            skp.Color = SkiaSharp.SKColors.Red;
+            skp.TextSize = 40;
+            canvas.DrawText(vericode, 30, 55, skp);
+            canvas.Save();
+        }
+
+        using System.IO.MemoryStream ms = new System.IO.MemoryStream();
+        using SkiaSharp.SKManagedWStream ws = new SkiaSharp.SKManagedWStream(ms);
+        bmp.Encode(ws, SkiaSharp.SKEncodedImageFormat.Jpeg, 100);
+
+        imgurl = "data:image/jpeg;base64," + Convert.ToBase64String(ms.ToArray());
+    }
+
+
+}

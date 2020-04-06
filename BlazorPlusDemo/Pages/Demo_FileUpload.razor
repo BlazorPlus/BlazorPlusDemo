@@ -173,10 +173,10 @@
 <br />
 <fieldset>
 	<legend>As Transparent Mask</legend>
-	@* IE11 doesn't support this layout , need to use an outer wrapper for it *@
-	<button style="display:inline-block;position:relative;">
+	@* IE11 doesn't support input in the button , so the onclick fix it *@
+	<button style="display:inline-block;position:relative;" onclick="this.querySelector('input').click()">
 		<span>Upload a file</span>
-		<BlazorUploader @ref="uploader2" CssText="position:absolute;z-index:1;left:0px;top:0px;width:100%;height:100%;opacity:0" />
+		<BlazorUploader @ref="uploader2" CssText="position:absolute;left:0px;top:0px;width:100%;height:100%;opacity:0" />
 	</button>
 
 </fieldset>
@@ -204,9 +204,9 @@
 <fieldset>
 	<legend>Progress dialog with cancel button</legend>
 
-	<button style="display:inline-block;position:relative;">
+	<button style="display:inline-block;position:relative;" onclick="this.querySelector('input').click()">
 		<span>Upload a file</span>
-		<BlazorUploader @ref="uploader3" CssText="position:absolute;z-index:1;left:0px;top:0px;width:100%;height:100%;opacity:0" />
+		<BlazorUploader @ref="uploader3" CssText="position:absolute;left:0px;top:0px;width:100%;height:100%;opacity:0" />
 	</button>
 
 </fieldset>
@@ -244,7 +244,7 @@
 	uploader.postfiles([file]);
 	">
 		<span>Generate file and upload</span>
-		<BlazorUploader @ref="uploader4" CssText="position:absolute;z-index:1;left:0px;top:0px;width:0px;opacity:0" />
+		<BlazorUploader @ref="uploader4" CssText="position:absolute;left:0px;top:0px;width:0px;opacity:0" />
 	</button>
 
 </fieldset>
@@ -274,9 +274,9 @@
 <fieldset>
 	<legend>Check Upload Parameter (Image file &lt; 200K) </legend>
 
-	<button style="display:inline-block;position:relative;">
+	<button style="display:inline-block;position:relative;" onclick="this.querySelector('input').click()">
 		<span>Upload a file</span>
-		<BlazorUploader @ref="uploader5" CssText="position:absolute;z-index:1;left:0px;top:0px;width:100%;height:100%;opacity:0" />
+		<BlazorUploader @ref="uploader5" CssText="position:absolute;left:0px;top:0px;width:100%;height:100%;opacity:0" />
 	</button>
 
 </fieldset>
@@ -335,7 +335,7 @@
 
 	<button style="display:inline-block;position:relative;" onmousedown="@uploader6_onclick_script">
 		<span>Upload a file</span>
-		<BlazorUploader @ref="uploader6" CssText="position:absolute;z-index:1;left:0px;top:0px;width:0;opacity:0" />
+		<BlazorUploader @ref="uploader6" CssText="position:absolute;left:0px;top:0px;width:0;opacity:0" />
 	</button>
 
 </fieldset>

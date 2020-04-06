@@ -1,0 +1,71 @@
+﻿@page "/Demo_type_number_in_image_simple"
+
+@{ BlazorSession.Current["source_code_button_path"] = "Demo_type_number_in_image_simple"; }
+
+<p>
+	A sample for how to show verification code and verify it. (EditFrom)
+</p>
+
+
+@inject IJSRuntime jsr
+
+@{
+	if (imgurl == null) MakeNewImage();
+}
+
+<img style="border:solid 1px #ccc" src="@imgurl" />
+<button @onclick="MakeNewImage">Renew</button>
+<hr />
+<div>Type the number in image</div>
+<EditForm Model="this" OnSubmit="DoCheck">
+	<input type="text" @bind-value="inp_code" style="padding:5px" />
+	<button>Check</button>
+</EditForm>
+
+@code{
+	string inp_code;
+	string vericode;
+	string imgurl;
+
+	void DoCheck()
+	{
+		string msgtitle = "Failed";
+		string msg = "You typed a wrong value";
+		if (inp_code == vericode)
+		{
+			msgtitle = "OK";
+			msg = "Yes the number is " + vericode;
+		}
+		BlazorSession.Current.Alert(msgtitle, msg, delegate
+		{
+			////Not easy to focus the input in this mode yet
+			//inp.SetFocus();
+		});
+	}
+
+	void MakeNewImage()
+	{
+
+		vericode = new Random().Next(100000, 999999).ToString();
+
+		using SkiaSharp.SKBitmap bmp = new SkiaSharp.SKBitmap(200, 80);
+
+		using (SkiaSharp.SKCanvas canvas = new SkiaSharp.SKCanvas(bmp))
+		{
+			canvas.Clear(SkiaSharp.SKColors.White);
+			using SkiaSharp.SKPaint skp = new SkiaSharp.SKPaint();
+			skp.Color = SkiaSharp.SKColors.Red;
+			skp.TextSize = 40;
+			canvas.DrawText(vericode, 30, 55, skp);
+			canvas.Save();
+		}
+
+		using System.IO.MemoryStream ms = new System.IO.MemoryStream();
+		using SkiaSharp.SKManagedWStream ws = new SkiaSharp.SKManagedWStream(ms);
+		bmp.Encode(ws, SkiaSharp.SKEncodedImageFormat.Jpeg, 100);
+
+		imgurl = "data:image/jpeg;base64," + Convert.ToBase64String(ms.ToArray());
+	}
+
+
+}

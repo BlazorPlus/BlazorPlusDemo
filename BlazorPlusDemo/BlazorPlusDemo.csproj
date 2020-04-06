@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="BlazorPlus" Version="1.0.15" />
+    <PackageReference Include="SkiaSharp" Version="1.68.2-preview.50" />
   </ItemGroup>
 
 </Project>
