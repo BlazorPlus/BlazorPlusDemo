@@ -22,6 +22,14 @@
 	[CascadingParameter]
 	BlazorDialog dlg { get; set; }  // If use Dialog to show this file , this property will be setted
 
+	void CloseAnimate()
+	{
+		int delayMS = 500;
+		BlazorSession.Current.EvalCode("var d=document.querySelector('#'+arguments[0]);if(d){d.classList.add(arguments[1])}"
+			, dlg.ElementId, "dialog-slide-out");
+		BlazorSession.Current.SetTimeout(delayMS, dlg.Close);
+	}
+
 	[Parameter]
 	public string Message { get; set; }
 
@@ -33,7 +41,7 @@
 			{
 				BlazorSession.Current.ConfirmYes("Quit", "You click ESC or BACK , are you sure to quit?", () =>
 				{
-					dlg.Close();
+					CloseAnimate();
 				});
 			};
 		}
@@ -46,7 +54,7 @@
 		{
 			BlazorSession.Current.ConfirmYes("Quit", "You click close button , are you sure to close?", () =>
 			{
-				dlg.Close();
+				CloseAnimate();
 			});
 		}
 		else
