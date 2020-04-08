@@ -1,7 +1,5 @@
 ﻿@page "/Demo_CustomDialog"
 
-@{ BlazorSession.Current["source_code_button_path"] = "Demo_CustomDialog"; }
-
 <h3>
 	BlazorDialog
 </h3>
@@ -34,7 +32,7 @@
 	</tr>
 	<tr>
 		<td>
-			<button @onclick="Show_Dialog2">Custom Close Behavior</button>
+			<button @onclick="Show_Dialog2">Custom Close</button>
 		</td>
 		<td>
 			<a style="text-decoration:underline;cursor:pointer" @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog2"); }'>Dialog_Dialog2.razor</a>
@@ -117,4 +115,75 @@
 			control.Message = "CustomDialog";
 		});
 	}
+}
+
+
+
+
+
+
+<br />
+<hr />
+<br />
+
+<h3>Url State Dialog <span style="color:red">Important</span></h3>
+<p>
+	If dialog is showed by the URL , when page refresh, it will be show again.
+</p>
+<p>
+	The Dialog must use <span style="color:cyan">@@page "/Dialog_Dialog4"</span> to allow it be active
+</p>
+
+<table border="1" cellpadding="8">
+	<tr>
+		<th>
+			Sample
+		</th>
+		<th>
+			Description
+		</th>
+	</tr>
+	<tr>
+		<td>
+			<button @onclick="Show_Dialog4">DefaultLayout</button>
+		</td>
+		<td>
+			<a style="text-decoration:underline;cursor:pointer" @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog4"); }'>Dialog_Dialog4.razor</a>
+			use @@page "/Dialog_Dialog4" to accept the URL
+
+			<br />
+			Use @@layout DialogLayout for another layout :
+
+			<a style="text-decoration:underline;cursor:pointer" @onclick='()=> { MainLayout.ShowCode("DialogLayout"); }'>DialogLayout.razor</a>
+
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<button @onclick="DoTestParam">Test Param</button>
+		</td>
+		<td>
+			Use route "/Dialog_Dialog4/{Message}/" to pass parameter
+		</td>
+	</tr>
+</table>
+
+
+
+@code{
+
+
+
+	void Show_Dialog4()
+	{
+		BlazorSession.Current.ShowDialog("/Dialog_Dialog4");
+
+	}
+
+	void DoTestParam()
+	{
+		BlazorSession.Current.ShowDialog("/Dialog_Dialog4/ParamIsHello");
+	}
+
+
 }

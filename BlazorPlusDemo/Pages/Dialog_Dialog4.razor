@@ -1,8 +1,11 @@
-﻿
+﻿@page "/Dialog_Dialog4"
+@page "/Dialog_Dialog4/{Message}/"
+@layout DialogLayout
+
 <div style="min-width:320px;width:50%;height:50%;background-color:white;padding:12px;border-radius:5px;box-shadow:#999 1px 1px 6px">
 	<div style="display:flex;">
 		<span style="flex:99;">
-			Dialog_Dialog1.razor <button @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog1"); }'>ShowCode</button>
+			Dialog_Dialog4.razor <button @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog4"); }'>ShowCode</button>
 		</span>
 		<button @onclick="DoClose">Close</button>
 	</div>
@@ -20,17 +23,40 @@
 	BlazorDialog dlg { get; set; }  // If use Dialog to show this file , this property will be setted
 
 	[Parameter]
-	public string Message { get; set; } = "No Message Yet";
+	public string Message { get; set; }
+
+	protected override Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (dlg != null)
+		{
+			dlg.CancelHandler = delegate
+			{
+				BlazorSession.Current.ConfirmYes("Quit", "You click ESC or BACK , are you sure to quit?", () =>
+				{
+					dlg.Close();
+				});
+			};
+		}
+		return base.OnAfterRenderAsync(firstRender);
+	}
 
 	void DoClose()
 	{
 		if (dlg != null)
-			dlg.Close();
+		{
+			BlazorSession.Current.ConfirmYes("Quit", "You click close button , are you sure to close?", () =>
+			{
+				dlg.Close();
+			});
+		}
 		else
+		{
 			BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog\r\nSend back() instead", delegate
 			{
 				BlazorSession.Current.EvalCode("history.back()");
 			});
+		}
 	}
+
 
 }

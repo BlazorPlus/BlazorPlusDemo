@@ -1,0 +1,18 @@
+﻿@inherits LayoutComponentBase
+
+
+<div class="main">
+	<div class="top-row px-4" style="z-index:1;justify-content:flex-start">
+
+		<button onclick="history.back()">Back</button>
+
+	</div>
+
+	<div class="content px-4" style="padding-bottom:88px">
+		<CascadingValue Value="this">
+			@Body
+		</CascadingValue>
+	</div>
+</div>
+
+

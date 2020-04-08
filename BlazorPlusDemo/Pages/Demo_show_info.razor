@@ -1,8 +1,5 @@
 ﻿@page "/demo_show_info"
 
-@{ BlazorSession.Current["source_code_button_path"] = "demo_show_info"; }
-
-
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
 
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment whe
@@ -70,10 +67,6 @@
 	</div>
 
 	<div>
-		<label>Current Uri : </label>@navmgr.Uri
-	</div>
-
-	<div>
 		<label>InstanceCount : </label>@BlazorSession.InstanceCount
 	</div>
 	<div>
@@ -104,6 +97,11 @@
 	<div>
 		<label>Request Url : </label>@(hca.HttpContext.Request.Scheme)://@(hca.HttpContext.Request.Host)@(hca.HttpContext.Request.Path)@(hca.HttpContext.Request.QueryString)
 	</div>
+
+	<div>
+		<label>Current Uri : </label>@navmgr.Uri
+	</div>
+
 	<div>
 		<label>Request.Headers : </label>@string.Join(",", hca.HttpContext.Request.Headers.Keys.ToArray())
 	</div>

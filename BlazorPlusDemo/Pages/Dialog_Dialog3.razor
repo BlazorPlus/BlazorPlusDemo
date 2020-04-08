@@ -48,7 +48,10 @@
 		if (dlg != null)
 			dlg.Close();
 		else
-			BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog");
+			BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog\r\nSend back() instead", delegate
+			{
+				BlazorSession.Current.EvalCode("history.back()");
+			});
 	}
 
 

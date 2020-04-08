@@ -1,7 +1,5 @@
 ﻿@page "/Demo_type_number_in_image_simple"
 
-@{ BlazorSession.Current["source_code_button_path"] = "Demo_type_number_in_image_simple"; }
-
 <p>
 	A sample for how to show verification code and verify it. (EditFrom)
 </p>
@@ -18,7 +16,7 @@
 <hr />
 <div>Type the number in image</div>
 <EditForm Model="this" OnSubmit="DoCheck">
-	<input type="text" @bind-value="inp_code" style="padding:5px" />
+	<input @ref="inp" type="text" @bind-value="inp_code" style="padding:5px" />
 	<button>Check</button>
 </EditForm>
 
@@ -26,6 +24,8 @@
 	string inp_code;
 	string vericode;
 	string imgurl;
+
+	ElementReference inp;
 
 	void DoCheck()
 	{
@@ -38,8 +38,7 @@
 		}
 		BlazorSession.Current.Alert(msgtitle, msg, delegate
 		{
-			////Not easy to focus the input in this mode yet
-			//inp.SetFocus();
+			BlazorSession.Current.EvalCode("arguments[0].focus()", inp);
 		});
 	}
 

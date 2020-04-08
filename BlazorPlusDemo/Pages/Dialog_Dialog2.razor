@@ -1,18 +1,18 @@
 ﻿
-	<div style="min-width:320px;width:50%;height:50%;background-color:white;padding:12px;border-radius:5px;box-shadow:#999 1px 1px 6px">
-		<div style="display:flex;">
-			<span style="flex:99;">
-				Dialog_Dialog2.razor <button @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog2"); }'>ShowCode</button>
-			</span>
-			<button @onclick="DoClose">Close</button>
-		</div>
-		<div style="text-align:center;font-size:1.5em;color:darkgreen;padding:32px;margin-top:5px;border-top:solid 1px #eee;">
-			@Message
-		</div>
-		<div style="text-align:center;color:#666;">
-			Press ESC or click browser BACK button to close this dialog;
-		</div>
+<div style="min-width:320px;width:50%;height:50%;background-color:white;padding:12px;border-radius:5px;box-shadow:#999 1px 1px 6px">
+	<div style="display:flex;">
+		<span style="flex:99;">
+			Dialog_Dialog2.razor <button @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog2"); }'>ShowCode</button>
+		</span>
+		<button @onclick="DoClose">Close</button>
 	</div>
+	<div style="text-align:center;font-size:1.5em;color:darkgreen;padding:32px;margin-top:5px;border-top:solid 1px #eee;">
+		@Message
+	</div>
+	<div style="text-align:center;color:#666;">
+		Press ESC or click browser BACK button to close this dialog;
+	</div>
+</div>
 
 @code{
 
@@ -46,7 +46,12 @@
 			});
 		}
 		else
-			BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog");
+		{
+			BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog\r\nSend back() instead", delegate
+			{
+				BlazorSession.Current.EvalCode("history.back()");
+			});
+		}
 	}
 
 

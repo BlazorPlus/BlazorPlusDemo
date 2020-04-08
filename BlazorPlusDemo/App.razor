@@ -1,7 +1,11 @@
+
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         @*Install-BlazorPlus*@
         <BlazorContainer IsShared="true" />
+        @{
+            BlazorSession.Current["route_page_type"] = routeData.PageType.ToString();
+        }
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
     <NotFound>
@@ -10,3 +14,6 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@* inject the BlazorSession so it will be created earlier *@
+@inject BlazorSession bs

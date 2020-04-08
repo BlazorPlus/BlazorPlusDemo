@@ -1,0 +1,106 @@
+﻿@page "/Demo_Browser"
+
+
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
+
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment whe
+
+@inject Microsoft.Extensions.Configuration.IConfiguration config
+
+@inject NavigationManager navmgr
+
+@if (BlazorSession.Current.Browser == null)
+{
+	BlazorSession.Current.SetTimeout(10, delegate
+	{
+		StateHasChanged();
+	});
+	return;
+}
+
+<style>
+	fieldset {
+		margin-bottom: 15px;
+	}
+
+		fieldset div {
+			padding-left: 20px;
+			white-space: nowrap;
+			max-width: 900px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+	legend {
+		font-size: 1em;
+		font-weight: bold;
+		margin: 8px 0;
+	}
+
+	label {
+		display: inline-block;
+		width: 200px;
+		color: navy;
+	}
+</style>
+
+<fieldset>
+	<legend>
+		BlazorBrowser:
+	</legend>
+
+	<div>
+		<label>BrowserId : </label>@BlazorSession.Current.Browser.UniqueID
+	</div>
+	<div>
+		<label>Same Browser Sessions : </label>@BlazorBrowser.Current.BlazorSessionCount
+	</div>
+
+	<div>
+		<label>Use Memory Browsers : </label>@BlazorBrowser.BrowserSessionCount
+	</div>
+	<div>
+		<label>MaintainMessage : </label>@BlazorBrowser.DebugBrowserMaintainMessage
+	</div>
+	<div>
+		<label>MaintainException : </label>@BlazorBrowser.DebugBrowserMaintainException
+	</div>
+	<div>
+		<label>MaintainDump : </label>@BlazorBrowser.DebugBrowserMaintainDump()
+	</div>
+	<div>
+		<label>MemoryTimeout : </label>@BlazorBrowser.MemoryTimeout.TotalSeconds secs (after all blazor pages be closed)
+	</div>
+
+	<div>
+		<button @onclick="DoSetMemoryItem">SetMemoryItem</button>
+		<button @onclick="DoGetMemoryItem">GetMemoryItem</button>
+
+		<button @onclick="DoSetStringItemAsync">SetStringItemAsync</button>
+		<button @onclick="DoGetStringItemAsync">GetStringItemAsync</button>
+	</div>
+
+</fieldset>
+
+@code{
+	void DoSetMemoryItem()
+	{
+		BlazorBrowser.Current.SetMemoryItem("Time", DateTime.Now.ToLongTimeString());
+		BlazorSession.Current.Toast("DONE");
+	}
+	void DoGetMemoryItem()
+	{
+		BlazorSession.Current.Alert("Time", "Time = " + BlazorBrowser.Current.GetMemoryItem("Time"));
+	}
+
+	async Task DoSetStringItemAsync()
+	{
+		await BlazorBrowser.Current.SetStringItemAsync("Time", DateTime.Now.ToLongTimeString());
+		BlazorSession.Current.Toast("DONE");
+	}
+	async Task DoGetStringItemAsync()
+	{
+		BlazorSession.Current.Alert("Time", "Time = " + await BlazorBrowser.Current.GetStringItemAsync("Time"));
+	}
+}
+
