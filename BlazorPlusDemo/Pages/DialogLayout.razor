@@ -1,43 +1,61 @@
 ﻿@inherits LayoutComponentBase
 
 <style>
-	@@keyframes dialog_layout_show {
-		0% {
-			transform: translate3d(100%,0,0);
-		}
-		100% {
-			transform: translate3d(0,0,0);
-		}
-	}
-	@@keyframes dialog_layout_hide {
-		0% {
-			transform: translate3d(0,0,0);
-		}
-		100% {
-			transform: translate3d(100%,0,0);
-		}
-	}
 
-	.dialog_layout_main {
-		animation: dialog_layout_show 0.3s;
-	}
-	.dialog-slide-out {
-		transform: translate3d(100%,0,0);
-		animation: dialog_layout_hide 0.3s;
-	}
+    @@media (max-width: 768px) {
+        .main .dialogtop {
+            position: sticky;
+            top: 0;
+            display: flex !important;
+        }
+    }
+
+    @@keyframes dialog_layout_show {
+        0% {
+            transform: translate3d(100%,0,0);
+        }
+
+        100% {
+            transform: translate3d(0,0,0);
+        }
+    }
+
+    @@keyframes dialog_layout_hide {
+        0% {
+            transform: translate3d(0,0,0);
+        }
+
+        100% {
+            transform: translate3d(100%,0,0);
+        }
+    }
+
+    .BlazorDialog-WithLayout {
+        background-color: transparent !important;
+    }
+
+    .dialog_layout_main {
+        animation: dialog_layout_show 0.3s;
+        background-color: #fff;
+    }
+
+    .dialog-slide-out {
+        transform: translate3d(100%,0,0);
+        animation: dialog_layout_hide 0.3s;
+    }
 </style>
 <div class="main dialog_layout_main">
-	<div class="top-row px-4" style="z-index:1;justify-content:flex-start">
+    <div class="top-row px-4 dialogtop" style="z-index:1;justify-content:flex-start;">
 
-		<button onclick="history.back()">Back</button>
+        <button onclick="history.back()">Back</button>
 
-	</div>
+    </div>
 
-	<div class="content px-4" style="padding-bottom:88px">
-		<CascadingValue Value="this">
-			@Body
-		</CascadingValue>
-	</div>
+    <div class="content px-4" style="padding-bottom:88px">
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
+    </div>
 </div>
 
 
