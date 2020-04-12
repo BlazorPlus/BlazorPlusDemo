@@ -11,9 +11,8 @@ namespace BlazorPlusDemo
 		Microsoft.AspNetCore.Hosting.IWebHostEnvironment _whe;
 
 		public WebCustomizeSession(Microsoft.JSInterop.IJSRuntime jsr
-			, Microsoft.AspNetCore.Http.IHttpContextAccessor hca
 			, Microsoft.AspNetCore.Hosting.IWebHostEnvironment whe)
-			: base(jsr, hca)
+			: base(jsr)
 		{
 			_whe = whe;
 		}
