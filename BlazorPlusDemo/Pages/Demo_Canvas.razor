@@ -2,59 +2,81 @@
 
 <h1>Demo_Canvas</h1>
 <p>This sample show how to use the &lt;PlusCanvas/&gt; object</p>
+<p>Move mouse over the canvas for the brightness/alpha effect</p>
 
 <BlazorDomTree OnRootReady="bdtready" />
 
 @code{
 
-	void bdtready(BlazorDomTree bdt)
-	{
-		MakeAnother(bdt.Root);
-	}
+    void bdtready(BlazorDomTree bdt)
+    {
+        MakeAnother(bdt.Root);
+    }
 
-	void MakeAnother(PlusControl root)
-	{
-		PlusCanvas canvas = root.Create<PlusCanvas>
-			("width=500 height=500 style='width:250px;height:250px;border:solid 1px gray;'");
+    void MakeAnother(PlusControl root)
+    {
+        PlusCanvas canvas = root.Create<PlusCanvas>
+    ("width=500 height=500 style='width:250px;height:250px;border:solid 1px gray;'");
 
-		const int center = 250;
-		const int bigr = 200;
+        void Draw(int xoff, int yoff)
+        {
+            const int center = 250;
+            const int bigr = 200;
 
-		//add commands 
+            //add commands
+            canvas.ClearRect(0, 0, 500, 500);
+            canvas.LineWidth(3);
 
-		canvas.EvalContext("this.lineWidth=3");
+            canvas.ShadowColor("black");
+            canvas.ShadowBlur(8);
 
-		for (int angle = 0; angle < 360; angle += 6)
-		{
-			double piang = Math.PI * 2 * angle / 360;
-			double x = center + bigr * Math.Cos(piang);
-			double y = center + bigr * Math.Sin(piang);
+            double xo = (xoff - 50) / 50.0;
 
-			int r = GetColorValue(angle, 0);
-			int g = GetColorValue(angle, 120);
-			int b = GetColorValue(angle, 240);
+            xo = Math.Pow(2, xo);
 
-			canvas.BeginPath();
-			canvas.StrokeStyle("rgb(" + r + "," + g + "," + b + ")");
-			canvas.Arc(x, y, 28, 0, Math.PI * 2);
-			canvas.ClosePath();
-			canvas.Stroke();
-		}
+            canvas.Filter("brightness(" + xo + ")");
+            canvas.GlobalAlpha(yoff / 250.0);
 
-		canvas.Flush(); //send all commands
+            for (int angle = 0; angle < 360; angle += 6)
+            {
+                double piang = Math.PI * 2 * angle / 360;
+                double x = center + bigr * Math.Cos(piang);
+                double y = center + bigr * Math.Sin(piang);
 
-	}
+                int r = GetColorValue(angle, 0);
+                int g = GetColorValue(angle, 120);
+                int b = GetColorValue(angle, 240);
+
+                canvas.BeginPath();
+                canvas.StrokeStyle("rgb(" + r + "," + g + "," + b + ")");
+                canvas.Arc(x, y, 28, 0, Math.PI * 2);
+                canvas.ClosePath();
+                canvas.Stroke();
+            }
+
+            canvas.Flush(); //send all commands
+        }
+
+        canvas.OnMouseMove((sender, args) =>
+        {
+            Draw(args.JSEvent.offsetX, args.JSEvent.offsetY);
+        });
+
+        Draw(125, 250);
 
 
-	static int GetColorValue(int angle, int baseangle)
-	{
-		int diff1 = (3600 + angle - baseangle) % 360;
-		int diff2 = (3600 + baseangle - angle) % 360;
-		int diff = Math.Min(diff1, diff2);
-		if (diff > 120)
-			return 0;
-		return Math.Min(255, (120 - diff) * 255 / 120);
-	}
+    }
+
+
+    static int GetColorValue(int angle, int baseangle)
+    {
+        int diff1 = (3600 + angle - baseangle) % 360;
+        int diff2 = (3600 + baseangle - angle) % 360;
+        int diff = Math.Min(diff1, diff2);
+        if (diff > 120)
+            return 0;
+        return Math.Min(255, (120 - diff) * 255 / 120);
+    }
 
 
 }
