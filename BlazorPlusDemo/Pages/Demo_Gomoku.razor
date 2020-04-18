@@ -1,0 +1,329 @@
+﻿@page "/Demo_Gomoku"
+
+@implements IDisposable
+
+<h1>Demo_Gomoku</h1>
+
+@code{
+
+    bool _disposed;
+    void IDisposable.Dispose()
+    {
+        _disposed = true;
+        lock (typeof(Demo_Gomoku))
+        {
+            if (static_another_guy == this)
+                static_another_guy = null;
+            if (peer != null && !peer._disposed)
+            {
+                peer.bses.PostToRenderThread(delegate
+                {
+                    peer._Event_PeerDispose();
+                });
+            }
+        }
+    }
+
+    [Inject]
+    BlazorSession bses { get; set; }
+
+    string myname = "P" + Guid.NewGuid().ToString().Substring(0, 4);
+
+    string viewmode = null;
+
+    GomokuGame game;
+    Demo_Gomoku peer;
+    static Demo_Gomoku static_another_guy;
+
+    void Find_Another_Guy()
+    {
+    TryAgain:
+        lock (typeof(Demo_Gomoku))
+        {
+            if (static_another_guy == null)
+            {
+                static_another_guy = this;
+                viewmode = "wait-peer";
+                return;
+            }
+            peer = static_another_guy;
+            peer.peer = this;
+            static_another_guy = null;
+        }
+        if (peer._disposed)
+        {
+            peer = null;
+            goto TryAgain;
+        }
+
+        game = new GomokuGame(peer, this);
+
+        peer.bses.PostToRenderThread(delegate
+        {
+            peer._Event_PeerConnect();
+        });
+
+        viewmode = "game-ready";
+    }
+
+    void Cancel_Wait()
+    {
+        if (viewmode != "wait-peer")
+            return;
+        lock (typeof(Demo_Gomoku))
+        {
+            if (static_another_guy == this)
+            {
+                static_another_guy = null;
+                viewmode = null;
+            }
+        }
+    }
+
+    void _Event_PeerConnect()
+    {
+        game = peer.game;
+        viewmode = "game-ready";
+        bses.ConsoleLog("_Event_PeerConnect");
+        StateHasChanged();
+    }
+    void _Event_PeerDispose()
+    {
+        bses.ConsoleLog("_Event_PeerDispose");
+        StateHasChanged();
+    }
+
+    void _Event_GameUpdate()
+    {
+        bses.ConsoleLog("_Event_GameUpdate");
+        StateHasChanged();
+        if (game.winner != null)
+        {
+            if (game.winner == this)
+                bses.Alert("WIN", "You WIN");
+            else
+                bses.Alert("Oh..", "You lost");
+        }
+    }
+}
+
+@if (viewmode == null)
+{
+    <p>Welcome to Gomoku Game</p>
+    <p>There's no computer player yet!</p>
+    <p><button @onclick="Find_Another_Guy">Start the game with other guy</button></p>
+    return;
+}
+
+@if (viewmode == "wait-peer")
+{
+    <p>Waiting for another peer...</p>
+    <button @onclick="Cancel_Wait">Cancel</button>
+
+    <p>
+        <a href="/Demo_Gomoku" target="_blank">Play with yourself </a>
+    </p>
+    return;
+}
+
+@{
+    bool ismyturn = game.IsMyTurn(this);
+}
+
+<h2>Your Name @myname , Peer : @peer.myname</h2>
+
+@if (peer._disposed)
+{
+    <p style="color:red;">Peer has left the game</p>
+    <style>
+        .gametable {
+            opacity: 0.5;
+        }
+    </style>
+}
+else if (game.winner == this)
+{
+    <p style="color:blue;"> You Win !</p>
+}
+else if (game.winner == peer)
+{
+    <p style="color:red;"> You lost !</p>
+}
+else if (ismyturn)
+{
+    <p style="color:blue;">It's your turn.</p>
+    <style>
+        .gametable {
+            border-color: red !important;
+        }
+
+            .gametable td:hover {
+                background-color: wheat;
+                cursor: pointer;
+            }
+    </style>
+}
+else
+{
+    <p>Please wait for peer...</p>
+}
+
+<style>
+    .gametable, .gametable td {
+        background-color: #ccc;
+        border: solid 1px #000;
+    }
+
+        .gametable td {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+
+        .gametable span.black, .gametable span.white {
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 35px;
+            height: 35px;
+            border-radius: 99px;
+        }
+
+        .gametable span.black {
+            background-color: black;
+        }
+
+        .gametable span.white {
+            background-color: white;
+        }
+</style>
+
+<table class="gametable">
+    @for (int y = 0; y < game.YCount; y++)
+    {
+        <tr>
+            @for (int x = 0; x < game.XCount; x++)
+            {
+                int cx = x;
+                int cy = y;
+                void DoClick()
+                {
+                    if (game.Data[cx, cy] != null)
+                    {
+                        bses.Toast("Not here");
+                        return;
+                    }
+                    if (!ismyturn)
+                    {
+                        bses.Toast("Not your turn");
+                        return;
+                    }
+                    game.SetPos(this, cx, cy);
+                }
+
+                <td x="@x" y="@y" @onclick="DoClick">
+                    <span class="@game.Data[x,y]"></span>
+                </td>
+            }
+        </tr>
+    }
+</table>
+
+@code{
+
+    class GomokuGame
+    {
+        public System.Threading.SynchronizationContext sctx = new System.Threading.SynchronizationContext();
+
+        public int XCount = 15;
+        public int YCount = 15;
+
+        public string[,] Data = new string[15, 15];
+
+        public Demo_Gomoku black, white, winner;
+
+        public int Step = 0;
+
+
+        public GomokuGame(Demo_Gomoku blackplayer, Demo_Gomoku whiteplayer)
+        {
+            black = blackplayer;
+            white = whiteplayer;
+        }
+
+        public bool IsMyTurn(Demo_Gomoku player)
+        {
+            if (winner != null)
+                return false;
+            if (player == black)
+            {
+                return Step % 2 == 0;
+            }
+            else
+            {
+                return Step % 2 == 1;
+            }
+        }
+
+        public void SetPos(Demo_Gomoku player, int x, int y)
+        {
+            if (!IsMyTurn(player))
+                throw (new Exception("Invalid player"));
+            if (Data[x, y] != null)
+                throw (new Exception("Invalid position"));
+
+            Data[x, y] = player == black ? "black" : "white";
+            Step++;
+
+            CheckWin(x, y, 0, 1);
+            CheckWin(x, y, 1, 0);
+            CheckWin(x, y, 1, 1);
+            CheckWin(x, y, 1, -1);
+
+            NotifyPlayer(black);
+            NotifyPlayer(white);
+        }
+
+        string FindData(int x, int y)
+        {
+            if (x < 0 || x >= XCount) return null;
+            if (y < 0 || y >= YCount) return null;
+            return Data[x, y];
+        }
+
+        void CheckWin(int x, int y, int xadd, int yadd)
+        {
+            int c = 1;
+            string color = Data[x, y];
+            for (int s = 1; s < 5; s++)
+            {
+                if (FindData(x + s * xadd, y + s * yadd) != color)
+                    break;
+                c++;
+            }
+            for (int s = 1; s < 5; s++)
+            {
+                if (FindData(x - s * xadd, y - s * yadd) != color)
+                    break;
+                c++;
+            }
+            if (c < 5)
+                return;
+            if (color == "black")
+                winner = black;
+            else
+                winner = white;
+        }
+
+
+        void NotifyPlayer(Demo_Gomoku player)
+        {
+            player.bses.PostToRenderThread(delegate
+            {
+                player._Event_GameUpdate();
+            });
+        }
+
+    }
+
+}
