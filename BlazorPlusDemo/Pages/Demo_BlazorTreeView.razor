@@ -1,0 +1,226 @@
+﻿@page "/Demo_BlazorTreeView"
+@using System.Reflection
+<h3>BlazorTreeView</h3>
+<p>
+    A basic demo for dynamic data, delay loading.
+</p>
+<style>
+    .blazorplus-treeview-left {
+        width: 20px;
+        min-width: 20px;
+        max-width: 20px;
+    }
+
+    .root-asm {
+        color: firebrick;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .sub-ns {
+        color: navy;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .sub-type {
+        color: #666;
+        font-size: 15px;
+        font-style: italic;
+        cursor: pointer;
+    }
+
+    .node-loading {
+        color: #999;
+        font-size: 15px;
+        cursor: default;
+    }
+</style>
+
+<div style="border:solid 1px #999;padding:3px;display:flex;flex-direction:row">
+    <BlazorTreeView Nodes="TheTreeNodes" OnIconClick="ClickMyIcon" OnNodeClick="ClickMyNode"
+                    IconCssClassExpanded="oi oi-minus" IconCssClassCollapsed="oi oi-plus" IconCssClassLeaf="oi oi-file">
+        <NodeTemplate>
+            @if (context.DateItem is Type && context.Text.StartsWith("<"))
+            {
+                <span>
+                    [@context.Text]
+                </span>
+            }
+            else
+            {
+                <span>@context.Text</span>
+            }
+        </NodeTemplate>
+    </BlazorTreeView>
+    <div style="font-size:15px;">
+        @if (_selectedtype == null)
+        {
+            <div style="text-align:center;">Select type from left</div>
+        }
+        else
+        {
+            <div style="overflow:auto;">
+                <span style="color:blue;font-weight:bold;font-size:16px;">@_selectedtype.Name</span>
+                <br />
+                Assembly:@_selectedtype.Assembly.GetName().Name
+                <hr />
+                @foreach (var mem in FindMembers(_selectedtype))
+                {
+                    var mi = mem as MethodInfo;
+                    if (mem.MemberType == MemberTypes.NestedType)
+                        continue;
+                    if (mi != null && (mi.Name.StartsWith("get_") || mi.Name.StartsWith("set_") || mi.Name.StartsWith("add_") || mi.Name.StartsWith("remove_")))
+                        continue;
+
+                    <div style="white-space:nowrap">
+                        @((MarkupString)DemoUtility.GetTypeMemberHTML(mem))
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code{
+
+    static List<MemberInfo> FindMembers(Type t)
+    {
+        List<MemberInfo> list = new List<MemberInfo>();
+
+        list.AddRange(t.FindMembers(MemberTypes.All, BindingFlags.Public | BindingFlags.Static, null, null).OrderBy(v => v.Name));
+        list.AddRange(t.FindMembers(MemberTypes.All, BindingFlags.Public | BindingFlags.Instance, null, null).OrderBy(v => v.Name));
+
+        return list;
+    }
+
+    Type _selectedtype = null;
+
+    BlazorTreeNode[] _nodes;
+    BlazorTreeNode[] TheTreeNodes
+    {
+        get
+        {
+            if (_nodes != null)
+                return _nodes;
+
+            _nodes = AppDomain.CurrentDomain.GetAssemblies().Select(asm =>
+            {
+                var asmns = new AsmNamespace(asm);
+                BlazorTreeNode tn = new BlazorTreeNode();
+                tn.DateItem = asmns;
+                tn.Text = asmns.GetText();
+                tn.NodeCssClass = "root-asm";
+                tn.IconCssClass = "oi oi-folder";
+                return tn;
+            }).OrderBy(v => v.Text).ToArray();
+
+            return _nodes;
+        }
+    }
+
+    void ClickMyIcon(BlazorTreeViewEventArgs tve)
+    {
+        BlazorTreeNode node = tve.TreeNode;
+        object data = node.DateItem;
+        var asmns = data as AsmNamespace;
+        if (asmns != null)
+        {
+            if (node.Nodes.Count == 0)//not inited
+            {
+                node.IconCssClass = null;//set to default
+                node.Nodes.Add(new BlazorTreeNode { Text = "......", IconCssClass = "oi oi-flash", NodeCssClass = "node-loading" });
+                BlazorSession.Current.SetTimeout(200, delegate
+                {
+                    node.Nodes.Clear();
+                    foreach (AsmNamespace subns in asmns.GetNamespaces())
+                    {
+                        node.Nodes.Add(new BlazorTreeNode { DateItem = subns, Text = subns.GetText(), IconCssClass = "oi oi-plus", NodeCssClass = "sub-ns" });
+                    }
+                    foreach (Type type in asmns.GetTypes().Where(v=>v.IsPublic).OrderBy(v=>v.Name))
+                    {
+                        node.Nodes.Add(new BlazorTreeNode { DateItem = type, Text = DemoUtility.GetTypeNameText(type), IconCssClass = "oi oi-none", NodeCssClass = "sub-type" });
+                    }
+                    if (node.NodeCount == 0)
+                        node.IconCssClass = "oi oi-none";
+                    tve.TreeView.RefreshAll();
+                });
+            }
+        }
+        if (node.Nodes.Count != 0)
+        {
+            node.IsExpanded = !node.IsExpanded;
+        }
+        //tve.TreeView.RefreshAll(true);
+    }
+    void ClickMyNode(BlazorTreeViewEventArgs tve)
+    {
+        _selectedtype = tve.TreeNode.DateItem as Type;
+
+        ClickMyIcon(tve);
+    }
+
+
+    class AsmNamespace
+    {
+        public Assembly Assembly { get; }
+
+
+        public string Namespace { get; private set; }
+
+        public string GetText()
+        {
+            if (string.IsNullOrEmpty(Namespace))
+                return Assembly.GetName().Name;
+            int pos = Namespace.LastIndexOf('.');
+            if (pos == -1)
+                return Namespace;
+            return Namespace.Substring(pos + 1);
+        }
+
+        public AsmNamespace(Assembly asm)
+        {
+            Assembly = asm;
+        }
+
+        public AsmNamespace[] GetNamespaces()
+        {
+            List<string> nslist = new List<string>();
+
+            string prefix = Namespace != null ? Namespace + "." : null;
+
+            foreach (Type type in Assembly.GetTypes())
+            {
+                string fullname = type.FullName;
+                if (prefix != null && !fullname.StartsWith(prefix))
+                    continue;
+                int pos = fullname.IndexOf('.', prefix == null ? 0 : prefix.Length + 1);
+                if (pos == -1)
+                    continue;
+                nslist.Add(fullname.Substring(0, pos));
+            }
+
+            return nslist.Distinct().OrderBy(v => v).Select(v => new AsmNamespace(Assembly) { Namespace = v }).ToArray();
+        }
+        public Type[] GetTypes()
+        {
+            List<Type> types = new List<Type>();
+
+            string prefix = Namespace != null ? Namespace + "." : null;
+            foreach (Type type in Assembly.GetTypes())
+            {
+                string fullname = type.FullName;
+                if (prefix != null && !fullname.StartsWith(prefix))
+                    continue;
+                int pos = fullname.IndexOf('.', prefix == null ? 0 : prefix.Length + 1);
+                if (pos == -1)
+                    types.Add(type);
+            }
+
+            return types.ToArray();
+        }
+    }
+
+
+}
