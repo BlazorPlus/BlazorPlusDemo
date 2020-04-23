@@ -24,6 +24,14 @@
 	</tr>
 	<tr>
 		<td>
+			<button @onclick="Show_BootstrapInlineDialog" class="btn btn-primary">Bootstrap Modal</button>
+		</td>
+		<td>
+			Use bootstrap style
+		</td>
+	</tr>
+	<tr>
+		<td>
 			<button @onclick="Show_RazorFileDialog">Razor File Dialog</button>
 		</td>
 		<td>
@@ -71,7 +79,7 @@
 		</div>
 		};
 
-		Action<BlazorDialog> dlginit = argdlg =>
+		Action<BlazorDialog> dlgload = argdlg =>
 		{
 			dlg = argdlg;
 			dlg.CancelHandler = delegate    //ESC or BACK button clicked
@@ -80,8 +88,67 @@
 			};
 		};
 
-		BlazorSession.Current.ShowDialog(rf, dlginit);
+		BlazorSession.Current.ShowDialog(rf, dlgload);
 	}
+
+	void Show_BootstrapInlineDialog()
+	{
+		string nested_scope_message = "It's easy to use context data";
+
+		BlazorDialog dlg = null;
+
+		void CloseAnimate()
+		{
+			BlazorSession.Current.EvalCode(@"
+var cl=document.getElementById(arguments[0]).querySelector('.modal').classList;
+cl.remove('show');cl.add('hide')", dlg.ElementId);
+			BlazorSession.Current.SetTimeout(300, delegate
+			{
+				dlg.Close();
+			});
+		}
+
+		void DoSave()
+		{
+			BlazorSession.Current.Alert("DONE", "Data saved successfuly.", delegate
+			{
+				CloseAnimate();
+			});
+		}
+
+		RenderFragment rf = __builder =>
+		{
+		<div class="modal fade" bp-dialog-load="this.classList.add('show')" style="display:block">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">HeaderText</h4>
+						<button type="button" class="close" @onclick="CloseAnimate">&times;</button>
+					</div>
+					<div class="modal-body">
+						@nested_scope_message
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" @onclick="CloseAnimate">Close</button>
+						<button type="button" class="btn btn-primary" @onclick="DoSave">Save</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		};
+
+		Action<BlazorDialog> dlgload = argdlg =>
+		{
+			dlg = argdlg;
+			dlg.CancelHandler = delegate    //ESC or BACK button clicked
+			{
+				dlg.Close();
+			};
+		};
+
+		BlazorSession.Current.ShowDialog(rf, dlgload);
+	}
+
 
 	void Show_RazorFileDialog()
 	{
@@ -131,7 +198,7 @@
 	If dialog is showed by the URL , when page refresh, it will be show again.
 </p>
 <p>
-	The Dialog must use <span style="color:cyan">@@page "/Dialog_Dialog4"</span> to allow it be active
+	The Dialog must provide RouteAttribute <span style="color:darkcyan;background-color:#eee">@@page "/Dialog_Dialog4"</span>
 </p>
 
 <table border="1" cellpadding="8">
@@ -167,7 +234,10 @@
 		</td>
 	</tr>
 </table>
-
+<br/>
+<p>
+	The difference of Url Dialog and Link Navigation is that the Url Dialog keeps the caller UI open.
+</p>
 
 
 @code{

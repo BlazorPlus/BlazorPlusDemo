@@ -3,62 +3,59 @@
 @layout DialogLayout
 
 <div style="min-width:320px;width:50%;height:50%;background-color:white;padding:12px;border-radius:5px;box-shadow:#999 1px 1px 6px">
-    <div style="display:flex;">
-        <span style="flex:99;">
-            Dialog_Dialog4.razor <button @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog4"); }'>ShowCode</button>
-        </span>
-        <button @onclick="DoClose">Close</button>
-    </div>
-    <div style="text-align:center;font-size:1.5em;color:darkgreen;padding:32px;margin-top:5px;border-top:solid 1px #eee;">
-        @Message
-    </div>
-    <div style="text-align:center;color:#666;">
-        Press ESC or click browser BACK button to close this dialog;
-    </div>
+	<div style="display:flex;">
+		<span style="flex:99;">
+			Dialog_Dialog4.razor <button @onclick='()=> { MainLayout.ShowCode("Dialog_Dialog4"); }'>ShowCode</button>
+		</span>
+		<button @onclick="DoClose">Close</button>
+	</div>
+	<div style="text-align:center;font-size:1.5em;color:darkgreen;padding:32px;margin-top:5px;border-top:solid 1px #eee;">
+		@Message
+	</div>
+	<div style="text-align:center;color:#666;">
+		Press ESC or click browser BACK button to close this dialog;
+	</div>
 </div>
 
 @code{
 
-    [CascadingParameter]
-    BlazorDialog dlg { get; set; }  // If use Dialog to show this file , this property will be setted
+	[CascadingParameter]
+	BlazorDialog dlg { get; set; }  // If use Dialog to show this file , this property will be setted
 
-    void CloseAnimate()
-    {
-        int delayMS = 500;
-        BlazorSession.Current.EvalCode("var d=document.querySelector('#'+arguments[0]);if(d){d.classList.add(arguments[1])}"
-            , dlg.ElementId, "dialog-slide-out");
-        BlazorSession.Current.SetTimeout(delayMS, dlg.Close);
-    }
+	void CloseAnimate()
+	{
+		dlg.CloseAnimate("dialog-slide-out", 200);
+	}
 
-    [Parameter]
-    public string Message { get; set; }
+	[Parameter]
+	public string Message { get; set; }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (dlg != null)
-        {
-            dlg.CancelHandler = delegate
-            {
-                CloseAnimate();
-            };
-        }
-        return base.OnAfterRenderAsync(firstRender);
-    }
+	protected override Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (dlg != null)
+		{
+			dlg.CancelHandler = delegate
+			{
+				CloseAnimate();
+			};
+		}
+		return base.OnAfterRenderAsync(firstRender);
+	}
 
-    void DoClose()
-    {
-        if (dlg != null)
-        {
-            CloseAnimate();
-        }
-        else
-        {
-            BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog\r\nSend back() instead", delegate
-            {
-                BlazorSession.Current.EvalCode("history.back()");
-            });
-        }
-    }
+	void DoClose()
+	{
+		if (dlg != null)
+		{
+			CloseAnimate();
+		}
+		else
+		{
+			BlazorSession.Current.Alert("Error", "This razor file is not used as a Dialog\r\nSend back() instead", delegate
+			{
+				BlazorSession.Current.EvalCode("history.back()");
+			});
+		}
+	}
 
 
 }

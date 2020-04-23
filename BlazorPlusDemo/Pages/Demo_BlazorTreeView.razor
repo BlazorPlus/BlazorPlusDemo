@@ -5,7 +5,7 @@
     A basic demo for dynamic data, delay loading.
 </p>
 <style>
-    .blazorplus-treeview-left {
+    .bptreeview-left {
         width: 20px;
         min-width: 20px;
         max-width: 20px;
@@ -39,22 +39,24 @@
 </style>
 
 <div style="border:solid 1px #999;padding:3px;display:flex;flex-direction:row">
-    <BlazorTreeView Nodes="TheTreeNodes" OnIconClick="ClickMyIcon" OnNodeClick="ClickMyNode"
-                    IconCssClassExpanded="oi oi-minus" IconCssClassCollapsed="oi oi-plus" IconCssClassLeaf="oi oi-file">
-        <NodeTemplate>
-            @if (context.DateItem is Type && context.Text.StartsWith("<"))
-            {
-                <span>
-                    [@context.Text]
-                </span>
-            }
-            else
-            {
-                <span>@context.Text</span>
-            }
-        </NodeTemplate>
-    </BlazorTreeView>
-    <div style="font-size:15px;">
+    <div style="width:50%;max-height:500px;overflow:auto">
+        <BlazorTreeView Nodes="TheTreeNodes" OnIconClick="ClickMyIcon" OnNodeClick="ClickMyNode"
+                        IconCssClassExpanded="oi oi-minus" IconCssClassCollapsed="oi oi-plus" IconCssClassLeaf="oi oi-file">
+            <NodeTemplate>
+                @if (context.DateItem is Type && context.Text.StartsWith("<"))
+                {
+                    <span>
+                        [@context.Text]
+                    </span>
+                }
+                else
+                {
+                    <span>@context.Text</span>
+                }
+            </NodeTemplate>
+        </BlazorTreeView>
+    </div>
+    <div style="width:50%;height:500px;overflow:auto;font-size:15px;">
         @if (_selectedtype == null)
         {
             <div style="text-align:center;">Select type from left</div>
@@ -138,9 +140,9 @@
                     {
                         node.Nodes.Add(new BlazorTreeNode { DateItem = subns, Text = subns.GetText(), IconCssClass = "oi oi-plus", NodeCssClass = "sub-ns" });
                     }
-                    foreach (Type type in asmns.GetTypes().Where(v=>v.IsPublic).OrderBy(v=>v.Name))
+                    foreach (Type type in asmns.GetTypes().Where(v => v.IsPublic).OrderBy(v => v.Name))
                     {
-                        node.Nodes.Add(new BlazorTreeNode { DateItem = type, Text = DemoUtility.GetTypeNameText(type), IconCssClass = "oi oi-none", NodeCssClass = "sub-type" });
+                        node.Nodes.Add(new BlazorTreeNode { DateItem = type, Text = DemoUtility.GetTypeNameText(type), IconCssClass = "oi oi-code", NodeCssClass = "sub-type" });
                     }
                     if (node.NodeCount == 0)
                         node.IconCssClass = "oi oi-none";
