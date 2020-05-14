@@ -40,7 +40,7 @@
         margin: 8px 0;
     }
 
-    label {
+    fieldset label {
         display: inline-block;
         width: 180px;
         color: navy;
@@ -87,12 +87,12 @@
     <div>
         <label>Browser-JS-Timezone : </label>@BlazorSession.Current.Browser?.JavaScriptTimezoneOffset
     </div>
-    <div>
-        <label>Browser-Time : </label>@BlazorSession.Current.Browser?.ToBrowserTime(now)
-    </div>
     @*<div>
-            <label>Browser-Time : </label>@(now- (now - now.ToUniversalTime()) - TimeSpan.FromMinutes(BlazorSession.Current.Browser?.JavaScriptTimezoneOffset??0))
+            <label>Browser-Time : </label>@BlazorSession.Current.Browser?.ToBrowserTime(now)
         </div>*@
+    <div>
+        <label>Browser-Time : </label>@(now- (now - now.ToUniversalTime()) - TimeSpan.FromMinutes(BlazorSession.Current.Browser?.JavaScriptTimezoneOffset??0))
+    </div>
 
 </fieldset>
 
@@ -251,21 +251,19 @@
     }
 </fieldset>
 
-@if (hca.HttpContext.Connection.RemoteIpAddress.ToString() == "::1")
-{
-    <fieldset>
-        <legend>
-            Disk/Folder
-        </legend>
-        <div>
-            <label>Disks :</label>@(string.Join(",", Environment.GetLogicalDrives()))
-        </div>
-        @foreach (var enumval in Enum.GetValues(typeof(Environment.SpecialFolder)))
-        {
-            <div>
-                <label>@enumval :</label>@Environment.GetFolderPath((Environment.SpecialFolder)enumval)
-            </div>
-        }
 
-    </fieldset>
-}
+<fieldset>
+    <legend>
+        Disk/Folder
+    </legend>
+    <div>
+        <label>Disks :</label>@(string.Join(",",Environment.GetLogicalDrives()))
+    </div>
+    @foreach (var enumval in Enum.GetValues(typeof(Environment.SpecialFolder)))
+    {
+        <div>
+            <label>@enumval :</label>@Environment.GetFolderPath((Environment.SpecialFolder)enumval)
+        </div>
+    }
+
+</fieldset>
