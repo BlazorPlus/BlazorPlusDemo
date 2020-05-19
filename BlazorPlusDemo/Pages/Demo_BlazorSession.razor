@@ -1,5 +1,4 @@
 ﻿@page "/Demo_BlazorSession"
-
 @* for disposing dno *@
 @implements IDisposable
 
@@ -234,6 +233,66 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 	}
 }
 
+<br />
+<fieldset>
+	<legend>Waiting Mask:</legend>
+	<div>If you do a long time action and don't want user click anything, use WatingMask</div>
+	<div>You can customize it by : set css style for class .bp_waiting_mask , or override the default JS function GetWaitingMaskHTML or AddWaitingMask/SubWaitingMask</div>
+	<button @onclick="ShowWaitingMask">ShowWatingMask</button>
+
+	<button @onclick="TestAsync">TestAsync</button>
+
+	<button @onclick="Test2Async">Test2Async</button>
+
+	<button @onclick="TestSync">TestSync</button>
+
+	@_test_count
+
+</fieldset>
+
+@code{
+	void ShowWaitingMask()
+	{
+		BlazorSession.Current.AddWaitingMask();
+		BlazorSession.Current.SetTimeout(5000, delegate
+		{
+			BlazorSession.Current.SubWaitingMask();
+		});
+	}
+
+	int _test_count = 0;
+
+	async Task TestAsync()
+	{
+		_test_count++;
+		await BlazorSession.Current.InvokeInRenderThreadAsync(async delegate
+		{
+			await Task.Delay(2000);
+			_test_count++;
+		}, true, StateHasChanged);
+	}
+
+	async Task Test2Async()
+	{
+		_test_count++;
+		await BlazorSession.Current.InvokeInRenderThreadAsync(delegate
+		{
+			System.Threading.Thread.Sleep(2000);
+			_test_count++;
+		}, true, StateHasChanged);
+	}
+
+	void TestSync()
+	{
+		_test_count++;//not able update immediatley , the render thread blocked
+		BlazorSession.Current.InvokeInRenderThread(delegate
+		{
+			System.Threading.Thread.Sleep(2000);//JUST a test , not recommand to block render thread
+		_test_count++;
+		}, true);
+	}
+
+}
 
 <br />
 <br />
