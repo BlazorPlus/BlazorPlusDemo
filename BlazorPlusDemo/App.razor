@@ -1,19 +1,21 @@
-
-<Router AppAssembly="@typeof(Program).Assembly">
-    <Found Context="routeData">
-        @*Install-BlazorPlus*@
-        <BlazorContainer IsShared="true" />
-        @{
-            BlazorSession.Current["route_page_type"] = routeData.PageType.ToString();
-        }
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
-
+@*Install-BlazorPlus*@
+<BlazorContainer IsShared="true" />
 @* inject the BlazorSession so it will be created earlier *@
 @inject BlazorSession bs
+
+<Router AppAssembly="@typeof(Program).Assembly">
+	<Found Context="routeData">
+
+		@{
+			BlazorSession.Current["route_page_type"] = routeData.PageType.ToString();
+		}
+		<RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+	</Found>
+	<NotFound>
+		<LayoutView Layout="@typeof(MainLayout)">
+			<p>Sorry, there's nothing at this address.</p>
+		</LayoutView>
+	</NotFound>
+</Router>
+
+
