@@ -22,6 +22,9 @@
 	[CascadingParameter]
 	BlazorDialog dlg { get; set; }  // If use Dialog to show this file , this property will be setted
 
+	[CascadingParameter]
+	DialogLayout layout { get; set; }
+
 	void CloseAnimate()
 	{
 		dlg.CloseAnimate("dialog-slide-out", 200);
@@ -39,6 +42,16 @@
 				CloseAnimate();
 			};
 		}
+
+		RenderFragment title = (__builder) =>
+		{
+		<span>
+			This Is <span style="text-decoration:underline" @onclick='() => { MainLayout.ShowCode("Dialog_Dialog4"); }'>Dialog4</span>
+		</span>
+		};
+
+		layout.SetTitle(title);
+
 		return base.OnAfterRenderAsync(firstRender);
 	}
 

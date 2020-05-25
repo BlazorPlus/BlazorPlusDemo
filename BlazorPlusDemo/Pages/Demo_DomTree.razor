@@ -1,44 +1,9 @@
 ﻿@page "/Demo_DomTree"
 
 <h3 style="color:darkcyan">&lt;BlazorDomTree /&gt;</h3>
-<p>&lt;BlazorDomTree /&gt; provide API to let developers control the DOM directly like jQuery </p>
-<p>Now developers can make UI in classic mode with C# code </p>
+<p class="text-primary text-lg-left font-weight-bolder">Process DOM directly like jQuery </p>
+
 <img src="/images/graph_about_state.jpg" style="max-width:80%" />
-<hr />
-<p>At first , it's an element :</p>
-<table border="1" cellpadding="10">
-	<tr style="text-align:center;"><td style="width:186px">View</td><td>Code</td></tr>
-	<tr>
-		<td>
-			<BlazorDomTree TagName="div" style="display:inline-block;padding:20px 40px;border:solid 1px red;background-color:#eee;color:red">Hello World</BlazorDomTree>
-		</td>
-		<td>
-			&lt;BlazorDomTree TagName="div" style="display:inline-block;padding:20px 40px;border:solid 1px red;background-color:#eee;color:red"&gt;Hello World&lt;/BlazorDomTree&gt;
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<BlazorDomTree TagName="textarea" style="width:165px;height:60px">Type your message..</BlazorDomTree>
-		</td>
-		<td>
-			&lt;BlazorDomTree TagName="textarea" style="width:165px;height:60px"&gt;Type your message..&lt;/BlazorDomTree&gt;
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<BlazorDomTree TagName="input" type="password" placeholder="Your password" style="width:165px;" />
-		</td>
-		<td>
-			&lt;BlazorDomTree TagName="input" type="password" placeholder="Your password" style="width:165px;" /&gt;
-		</td>
-	</tr>
-</table>
-
-<br />
-
-
-
-
 
 <div style="margin:5px 0">
 	Use 'TagInitScript' to control the element in client side :
@@ -181,4 +146,4 @@ console.log('canvas attached')
 
 <br />
 <br />
-<Part_DomTreeSampleLinks/>
+<Part_DomTreeSampleLinks />

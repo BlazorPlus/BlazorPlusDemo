@@ -170,9 +170,9 @@
 
 <br />
 <fieldset>
-	<legend>As Transparent Mask</legend>
+	<legend>As Transparent Mask , opacity:0 </legend>
 	@* IE11 doesn't support input in the button , so the onclick fix it *@
-	<button style="display:inline-block;position:relative;" onclick="this.querySelector('input').click()">
+	<button class="btn btn-info" style="display:inline-block;position:relative;" onclick="this.querySelector('input').click()">
 		<span>Upload a file</span>
 		<BlazorUploader @ref="uploader2" style="position:absolute;left:0px;top:0px;width:100%;height:100%;opacity:0" />
 	</button>

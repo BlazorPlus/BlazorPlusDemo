@@ -1,13 +1,9 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+	<h1>BlazorPlus</h1>
 
-Welcome to your new app.
-
+BlazorPlus is a component library that helps you to write code more directly and easily.
 <br />
-<br />
-
-This is the basic demo for BlazorPlus
 <br />
 Demo source  : <a href="https://github.com/BlazorPlus/BlazorPlusDemo" target="_blank">https://github.com/BlazorPlus/BlazorPlusDemo</a>
 <br />
@@ -18,7 +14,7 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
 
 @*Install-BlazorPlus*@
 
-<button @onclick="ShowHelloWorld">Hello World</button>
+<button class="btn btn-info" @onclick="ShowHelloWorld">Hello World</button>
 @code{
 	void ShowHelloWorld()
 	{
@@ -29,7 +25,7 @@ Main website : <a href="http://blazorplus.com" target="_blank">http://blazorplus
 
 ,
 
-<button @onclick="ShowPing">Ping Network Delay</button>
+<button class="btn btn-info" @onclick="ShowPing">Ping Network Delay</button>
 @code{
 	async void ShowPing()
 	{

@@ -1,135 +1,126 @@
 ﻿<style>
 
-    @@keyframes navbar-toggler-flash {
-        from {
-            background: darkgreen;
-        }
+	@@keyframes navbar-toggler-flash {
+		from {
+			background: darkgreen;
+		}
 
-        to {
-            background: darkorange;
-        }
-    }
+		to {
+			background: darkorange;
+		}
+	}
 
-    .navbar-toggler-flash {
-        animation: navbar-toggler-flash 1.2s ease 999999 alternate;
-    }
+	.navbar-toggler-flash {
+		animation: navbar-toggler-flash 1.2s ease 999999 alternate;
+	}
 
-    @@media (min-width: 768px) {
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            min-width: 235px;
-        }
+	@@media (min-width: 768px) {
+		.sidebar {
+			display: flex;
+			flex-direction: column;
+			min-width: 235px;
+		}
 
-        .collapse {
-            overflow-y: auto;
-        }
-    }
+		.collapse {
+			overflow-y: auto;
+		}
+	}
 </style>
 
 <div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">BlazorPlusDemo</a>
-    <button class="navbar-toggler" @onclick="()=>MainLayout.ShowCurrentCode()">
-        <span class="oi oi-book" style="height:1.5em;line-height:1.5em;padding-top:3px;"></span>
-    </button>
-    <button class="navbar-toggler navbar-toggler-flash" onmousedown="this.classList.remove('navbar-toggler-flash')" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+	<a class="navbar-brand" href="">BlazorPlusDemo</a>
+	<button class="navbar-toggler" @onclick="()=>MainLayout.ShowCurrentCode()">
+		<span class="oi oi-book" style="height:1.5em;line-height:1.5em;padding-top:3px;"></span>
+	</button>
+	<button class="navbar-toggler navbar-toggler-flash" onmousedown="this.classList.remove('navbar-toggler-flash')" @onclick="ToggleNavMenu">
+		<span class="navbar-toggler-icon"></span>
+	</button>
 </div>
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
+	<ul class="nav flex-column">
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+				<span class="oi oi-home" aria-hidden="true"></span> Home
+			</NavLink>
+		</li>
 
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Demo_BaseDialog">
-                <span class="oi oi-plus" aria-hidden="true"></span> Base Dialog
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Demo_CustomDialog">
-                <span class="oi oi-plus" aria-hidden="true"></span> Modal Dialog
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="Demo_FileUpload">
-                <span class="oi oi-plus" aria-hidden="true"></span> File Upload
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="Demo_BlazorTreeView">
-                <span class="oi oi-plus" aria-hidden="true"></span> BlazorTreeView
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="Demo_BlazorSession">
-                <span class="oi oi-plus" aria-hidden="true"></span> BlazorSession
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="Demo_DomTree">
-                <span class="oi oi-plus" aria-hidden="true"></span> Live DomTree
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Test_PeerChat">
-                <span class="oi oi-plus" aria-hidden="true"></span> Chat Room
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Demo_Gomoku">
-                <span class="oi oi-plus" aria-hidden="true"></span> Gomoku Game
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/demo_show_info">
-                <span class="oi oi-plus" aria-hidden="true"></span> Show Info
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Demo_type_number_in_image">
-                <span class="oi oi-plus" aria-hidden="true"></span> Image Captcha
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Demo_SvgLive">
-                <span class="oi oi-plus" aria-hidden="true"></span> Live SVG
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Demo_Canvas">
-                <span class="oi oi-plus" aria-hidden="true"></span> HTML5 Canvas
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="/Demo_misc">
-                <span class="oi oi-plus" aria-hidden="true"></span> More samples
-            </NavLink>
-        </li>
-        @*<li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-plus" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>*@
-    </ul>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="/Demo_BaseDialog">
+				<span class="oi oi-plus" aria-hidden="true"></span> Base Dialog
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="/Demo_CustomDialog">
+				<span class="oi oi-plus" aria-hidden="true"></span> Modal Dialog
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="Demo_FileUpload">
+				<span class="oi oi-plus" aria-hidden="true"></span> File Upload
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="Demo_BlazorTreeView">
+				<span class="oi oi-plus" aria-hidden="true"></span> BlazorTreeView
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="Demo_BlazorSession">
+				<span class="oi oi-plus" aria-hidden="true"></span> BlazorSession
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="/demo_show_info">
+				<span class="oi oi-plus" aria-hidden="true"></span> Useful Info
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="Demo_DomTree">
+				<span class="oi oi-plus" aria-hidden="true"></span> Live DomTree
+			</NavLink>
+		</li>
+
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="/Demo_type_number_in_image">
+				<span class="oi oi-plus" aria-hidden="true"></span> Image Captcha
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="/Demo_SvgLive">
+				<span class="oi oi-plus" aria-hidden="true"></span> Live SVG
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="/Demo_Canvas">
+				<span class="oi oi-plus" aria-hidden="true"></span> HTML5 Canvas
+			</NavLink>
+		</li>
+		<li class="nav-item px-3">
+			<NavLink class="nav-link" href="/Demo_misc">
+				<span class="oi oi-plus" aria-hidden="true"></span> More samples
+			</NavLink>
+		</li>
+		@*<li class="nav-item px-3">
+				<NavLink class="nav-link" href="counter">
+					<span class="oi oi-plus" aria-hidden="true"></span> Counter
+				</NavLink>
+			</li>
+			<li class="nav-item px-3">
+				<NavLink class="nav-link" href="fetchdata">
+					<span class="oi oi-plus" aria-hidden="true"></span> Fetch data
+				</NavLink>
+			</li>*@
+	</ul>
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+	private bool collapseNavMenu = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+	private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
 }

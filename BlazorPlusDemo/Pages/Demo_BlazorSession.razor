@@ -4,7 +4,11 @@
 
 
 <h2>BlazorSession:</h2>
-<p>Each page has an unique BlazorSession object</p>
+<p class="text-primary text-lg-left font-weight-bolder">
+	An unique BlazorSession object is for one Blazor lifetime.
+	<br />
+	It's the most important service for BlazorPlus components
+</p>
 
 
 @if (BlazorSession.Current.Browser == null)
@@ -34,10 +38,10 @@
 <fieldset>
 	<legend>Browser Toast:</legend>
 	<div>Say something witout clicking OK ,all previous items with same key will be cleared</div>
-	<button @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000)'>Toast</button>
-	<button @onclick='()=>BlazorSession.Current.ToastClear()'>ToastClear</button>
-	<button @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000,"mytimetoast")'>Toast With Key</button>
-	<button @onclick='()=>BlazorSession.Current.Toast("The action is failed.",2000,"mywarningtoast")'>Key as css class</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000)'>Toast</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.ToastClear()'>ToastClear</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.Toast("Time Is "+DateTime.Now.ToString("HH:mm:ss.fff"),2000,"mytimetoast")'>Toast With Key</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.Toast("The action is failed.",2000,"mywarningtoast")'>Key as css class</button>
 </fieldset>
 
 @code{
@@ -46,7 +50,7 @@
 		int sid = BlazorSession.Current.SessionId;
 		int num = new Random().Next(1000, 9999);
 		BlazorSession.Current["magicnumber"] = num;
-		BlazorSession.Current.Alert("SetSessionData", "Session Id is " + sid + ", magic number is " + num + " , try to switch to another tab and back , click Read Session Data");
+		BlazorSession.Current.Alert("SetSessionData", "Session Id is " + sid + ", value " + num + " has been set , try to switch to another tab and back , click Read Session Data");
 	}
 	void DoReadSessionData()
 	{
@@ -56,9 +60,9 @@
 		if (objnum != null)
 			num = (int)objnum;
 		if (objnum == null)
-			BlazorSession.Current.Alert("ReadSessionData", "Session Id is " + sid + ", but there's no magic number. If you ever refreshed the page , the session will be resetted");
+			BlazorSession.Current.Alert("ReadSessionData", "Session Id is " + sid + ", but value was not setted .");
 		else
-			BlazorSession.Current.Alert("ReadSessionData", "Session Id is " + sid + ", magic number is " + num + " , try to switch to another tab and back , click Read Session Data");
+			BlazorSession.Current.Alert("ReadSessionData", "Session Id is " + sid + ", value was setted to " + num + " ");
 	}
 	void DoGetSessionDataCount()
 	{
@@ -75,13 +79,13 @@
 <fieldset>
 	<legend>Browser Console:</legend>
 	<div>open browser console to check the logs</div>
-	<button @onclick='()=>BlazorSession.Current.ConsoleLog("Current Date Is",DateTime.Now)'>ConsoleLog</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.ConsoleLog("Current Date Is",DateTime.Now)'>ConsoleLog</button>
 
-	<button @onclick='()=>BlazorSession.Current.ConsoleInfo("Current Date Is",DateTime.Now)'>ConsoleInfo</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.ConsoleInfo("Current Date Is",DateTime.Now)'>ConsoleInfo</button>
 
-	<button @onclick='()=>BlazorSession.Current.ConsoleWarn("Current Date Is",DateTime.Now)'>ConsoleWarn</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.ConsoleWarn("Current Date Is",DateTime.Now)'>ConsoleWarn</button>
 
-	<button @onclick='()=>BlazorSession.Current.ConsoleError("Current Date Is",DateTime.Now,Environment.StackTrace)'>ConsoleError</button>
+	<button class='btn btn-info' @onclick='()=>BlazorSession.Current.ConsoleError("Current Date Is",DateTime.Now)'>ConsoleError</button>
 </fieldset>
 
 <br />
@@ -89,10 +93,10 @@
 	<legend>Browser JavaScript:</legend>
 	<div>Interactive with browser script. <a href="/Demo_JavaScript" style="display:none;">More JavaScript Sample</a></div>
 	<div>It's not recommanded to use localStorage to store sensitive data in browser</div>
-	<button @onclick='DoEvalCode'>EvalCode</button>
-	<button @onclick='DoSetLocalStorage'>localStorage.setItem</button>
-	<button @onclick='DoGetLocalSotrange'>localStorage.getItem</button>
-	<button @onclick='DoTestClientCallback'>Client Callback</button>
+	<button class='btn btn-info' @onclick='DoEvalCode'>EvalCode</button>
+	<button class='btn btn-info' @onclick='DoSetLocalStorage'>localStorage.setItem</button>
+	<button class='btn btn-info' @onclick='DoGetLocalSotrange'>localStorage.getItem</button>
+	<button class='btn btn-info' @onclick='DoTestClientCallback'>Client Callback</button>
 
 </fieldset>
 
@@ -176,9 +180,9 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 <fieldset>
 	<legend>Server Session Data In Memory:</legend>
 	<div>Use session data to store session scope data, components can community with each other.</div>
-	<button @onclick='DoSetSessionData'>Set Session Data</button>
-	<button @onclick='DoReadSessionData'>Read Session Data</button>
-	<button @onclick='DoGetSessionDataCount'>Get Session Data Count</button>
+	<button class='btn btn-info' @onclick='DoSetSessionData'>Set Session Data</button>
+	<button class='btn btn-info' @onclick='DoReadSessionData'>Read Session Data</button>
+	<button class='btn btn-info' @onclick='DoGetSessionDataCount'>Get Session Data Count</button>
 </fieldset>
 
 
@@ -189,10 +193,10 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 	<div>BlazorPlus save a unique key into cookie/sessionStorage/localStorage and help developer to persist data</div>
 	<div>The values are persisted for short/long time <span style="color:red;font-weight:bold">after page refreshed</span></div>
 	<div>Your browser uid is : @BlazorBrowser.Current.UniqueID</div>
-	<button @onclick='DoSetMemoryItem'>Set Memory Data</button>
-	<button @onclick='DoGetMemoryItem'>Read Memory Data</button>
-	<button @onclick='DoSetStringItemAsync'>Set Persisted String</button>
-	<button @onclick='DoGetStringItemAsync'>Get Persisted String</button>
+	<button class='btn btn-info' @onclick='DoSetMemoryItem'>Set Memory Data</button>
+	<button class='btn btn-info' @onclick='DoGetMemoryItem'>Read Memory Data</button>
+	<button class='btn btn-info' @onclick='DoSetStringItemAsync'>Set Persisted String</button>
+	<button class='btn btn-info' @onclick='DoGetStringItemAsync'>Get Persisted String</button>
 </fieldset>
 
 
@@ -203,12 +207,13 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 		// 1 - the application restart
 		// 2 - user close all blazor pages after 10 minutes (default configuration)
 		// 3 - switch browser, use incognito mode , clear the browser storages etc...
-		BlazorBrowser.Current.SetMemoryItem("Time", DateTime.Now.ToLongTimeString());
-		BlazorSession.Current.Toast("DONE");
+		string time = DateTime.Now.ToLongTimeString();
+		BlazorBrowser.Current.SetMemoryItem("Time", time);
+		BlazorSession.Current.Toast("Value has been setted to '" + time + "'");
 	}
 	void DoGetMemoryItem()
 	{
-		BlazorSession.Current.Alert("Time", "Time = " + BlazorBrowser.Current.GetMemoryItem("Time"));
+		BlazorSession.Current.Alert("Time", "Value is '" + BlazorBrowser.Current.GetMemoryItem("Time") + "'");
 	}
 
 	async Task DoSetStringItemAsync()
@@ -225,11 +230,11 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 		//by the WebCustomizeSession implementation , the value is storage in BrowserStringItems folder
 
 		await BlazorBrowser.Current.SetStringItemAsync("MyMsg", message);
-		BlazorSession.Current.Toast("DONE");
+		BlazorSession.Current.Toast("MyMsg has been saved");
 	}
 	async Task DoGetStringItemAsync()
 	{
-		BlazorSession.Current.Alert("MyMsg", "MyMsg = " + await BlazorBrowser.Current.GetStringItemAsync("MyMsg"));
+		BlazorSession.Current.Alert("MyMsg", "MyMsg loaded : " + await BlazorBrowser.Current.GetStringItemAsync("MyMsg"));
 	}
 }
 
@@ -238,13 +243,13 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 	<legend>Waiting Mask:</legend>
 	<div>If you do a long time action and don't want user click anything, use WatingMask</div>
 	<div>You can customize it by : set css style for class .bp_waiting_mask , or override the default JS function GetWaitingMaskHTML or AddWaitingMask/SubWaitingMask</div>
-	<button @onclick="ShowWaitingMask">ShowWatingMask</button>
+	<button class='btn btn-info' @onclick="ShowWaitingMask">ShowWatingMask</button>
 
-	<button @onclick="TestAsync">TestAsync</button>
+	<button class='btn btn-info' @onclick="TestAsync">TestAsync</button>
 
-	<button @onclick="Test2Async">Test2Async</button>
+	<button class='btn btn-info' @onclick="Test2Async">Test2Async</button>
 
-	<button @onclick="TestSync">TestSync</button>
+	<button class='btn btn-info' @onclick="TestSync">TestSync</button>
 
 	@_test_count
 
@@ -254,6 +259,7 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 	void ShowWaitingMask()
 	{
 		BlazorSession.Current.AddWaitingMask();
+		BlazorSession.Current.Toast("Wait for 5 seconds..");
 		BlazorSession.Current.SetTimeout(5000, delegate
 		{
 			BlazorSession.Current.SubWaitingMask();
@@ -269,7 +275,7 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 		{
 			await Task.Delay(2000);
 			_test_count++;
-		}, true, StateHasChanged);
+		}, true);//pass true to show the wait-mask
 	}
 
 	async Task Test2Async()
@@ -279,7 +285,7 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 		{
 			System.Threading.Thread.Sleep(2000);
 			_test_count++;
-		}, true, StateHasChanged);
+		}, true);//pass true to show the wait-mask
 	}
 
 	void TestSync()
@@ -289,7 +295,7 @@ dno.invokeMethodAsync('_Index_ClientCallbackHandler','hello world from client si
 		{
 			System.Threading.Thread.Sleep(2000);//JUST a test , not recommand to block render thread
 		_test_count++;
-		}, true);
+		}, true);//pass true to show the wait-mask
 	}
 
 }
