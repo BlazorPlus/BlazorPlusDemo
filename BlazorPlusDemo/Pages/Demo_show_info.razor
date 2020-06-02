@@ -133,29 +133,31 @@
 
 
 <fieldset>
-    <legend>
-        HttpContext:
-    </legend>
-    <div>
-        <label>Connection.Id : </label>@hca.HttpContext.Connection.Id
-    </div>
-    <div>
-        <label>RemoteIpAddress : </label>@hca.HttpContext.Connection.RemoteIpAddress &nbsp;&nbsp;&nbsp;&nbsp; port: @hca.HttpContext.Connection.RemotePort
-    </div>
-    <div>
-        <label>Request Url : </label>@(hca.HttpContext.Request.Scheme)://@(hca.HttpContext.Request.Host)@(hca.HttpContext.Request.Path)@(hca.HttpContext.Request.QueryString)
-    </div>
+	<legend>
+		HttpContext:
+	</legend>
+	<div>
+		<label>Connection.Id : </label>@hca.HttpContext.Connection.Id
+	</div>
+	<div>
+		<label>RemoteIpAddress : </label>@hca.HttpContext.Connection.RemoteIpAddress &nbsp;&nbsp;&nbsp;&nbsp; port: @hca.HttpContext.Connection.RemotePort
+	</div>
+	<div>
+		<label>Request Url : </label>@(hca.HttpContext.Request.Scheme)://@(hca.HttpContext.Request.Host)@(hca.HttpContext.Request.Path)@(hca.HttpContext.Request.QueryString)
+	</div>
 
-    <div>
-        <label>Current Uri : </label>@navmgr.Uri
-    </div>
-
-    <div>
-        <label>Request.Headers : </label>@string.Join(",", hca.HttpContext.Request.Headers.Keys.ToArray())
-    </div>
-    <div>
-        <label>Request.Cookies : </label>@string.Join(",", hca.HttpContext.Request.Cookies.Keys.ToArray())
-    </div>
+	<div>
+		<label>Current Uri : </label>@navmgr.Uri
+	</div>
+	<div>
+		<label>User-Agent : </label>@hca.HttpContext.Request.Headers["User-Agent"].FirstOrDefault()
+	</div>
+	<div>
+		<label>Request.Headers : </label>@string.Join(",", hca.HttpContext.Request.Headers.Keys.ToArray())
+	</div>
+	<div>
+		<label>Request.Cookies : </label>@string.Join(",", hca.HttpContext.Request.Cookies.Keys.ToArray())
+	</div>
 </fieldset>
 <fieldset>
     <legend>
