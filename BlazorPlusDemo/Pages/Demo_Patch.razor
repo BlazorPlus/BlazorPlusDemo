@@ -1,0 +1,65 @@
+﻿@page "/Demo_Patch"
+
+<h3>bp-patch-*</h3>
+<p>
+	add class to element for more effect , in this sample , all bp-patch-wait-* buttons will Sleep(800)
+</p>
+
+<p>
+	Click Count : @clickcount
+</p>
+
+<style>
+	.demotable button {
+		width: 100px;
+	}
+
+	.demotable, .demotable td {
+		border: solid 1px gray;
+		padding: 8px;
+	}
+</style>
+
+<table class="demotable">
+	<tr><td>class</td><td>Demo</td><td>Description</td></tr>
+
+	<tr><td>bp-patch-wait-one</td><td><button @onclick="OnClick" class="btn btn-info bp-patch-wait-one">one</button></td><td> prevent one elements @@onclick fired again until previous event processed synchronizely</td></tr>
+
+	<tr><td>bp-patch-wait-all</td><td><button @onclick="OnClick" class="btn btn-info bp-patch-wait-all">all</button></td><td> prevent all other bp-patch-wait-* elements until this element event processed synchronizely </td></tr>
+
+	<tr><td>bp-patch-wait-mask</td><td><button @onclick="OnClick" class="btn btn-info bp-patch-wait-mask">mask</button></td><td> Show a mask until this element event processed synchronizely </td></tr>
+
+	<tr><td>bp-patch-ripple</td><td><button @onclick="RippleClick" class="btn btn-info bp-patch-ripple" bp-ripple-script="{color:'purple'}">ripple</button></td><td> Add a ripple effect to the button </td></tr>
+
+	<tr><td>bp-patch-ripple</td><td><button @onclick="RippleClick" class="btn btn-info bp-patch-ripple" bp-ripple-script="{color:'purple'}">ripple</button></td><td> Set ripple color </td></tr>
+
+	<tr><td>bp-patch-ripple</td><td><button @onclick="RippleClick" class="btn btn-info bp-patch-ripple" bp-ripple-script="{opacity:0.5,circle:'border:solid 30px red;background:transparent'}">ripple</button></td><td> Custom ripple 1 </td></tr>
+
+	<tr><td>bp-patch-ripple</td><td><button @onclick="RippleClick" class="btn btn-info bp-patch-ripple" bp-ripple-script="{opacity:0.5,circle:'border:solid 40px red;background:rgba(0,255,0,0.5)'}">ripple</button></td><td> Custom ripple 2 </td></tr>
+
+	<tr><td>bp-patch-ripple</td><td><button @onclick="RippleClick" class="btn btn-info bp-patch-ripple" bp-ripple-script="{opacity:0.5,animate:'size',circle:'border:solid 10px blue;background:transparent'}">ripple</button></td><td> Custom ripple 3 </td></tr>
+
+</table>
+
+<p>
+	There's no more docs for this feature yet .
+	<br />Check the function GetWaitingMaskHTML() in _Host.cshtml
+	<br />Check the js object BlazorPlus_Options for the ripple default options.
+</p>
+
+@code {
+
+	int clickcount = 0;
+
+	void OnClick()
+	{
+		clickcount++;
+		System.Threading.Thread.Sleep(800);
+	}
+
+	void RippleClick()
+	{
+		clickcount++;
+	}
+
+}
