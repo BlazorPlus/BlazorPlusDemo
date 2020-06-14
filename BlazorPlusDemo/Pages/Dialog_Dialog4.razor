@@ -27,7 +27,12 @@
 
 	void CloseAnimate()
 	{
-		dlg.CloseAnimate("dialog-slide-out", 200);
+		dlg.Session.EvalCode("var d=document.querySelector('#'+arguments[0]);if(d){d.classList.add(arguments[1])}"
+				, dlg.ElementId, "dialog-slide-out");
+		dlg.Session.SetTimeout(200, delegate
+		{
+			dlg.Close();
+		});
 	}
 
 	[Parameter]
