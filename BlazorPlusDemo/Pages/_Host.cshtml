@@ -2,7 +2,8 @@
 @namespace BlazorPlusDemo.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    Layout = null;
+	Layout = null;
+
 }
 
 <!DOCTYPE html>
@@ -21,7 +22,7 @@
 	@if (useragent != null && (useragent.Contains("MSIE") || useragent.Contains("Trident")))
 	{
 		//For IE11 , check https://github.com/Daddoon/Blazor.Polyfill/ for more
-		<script src="https://github.com/Daddoon/Blazor.Polyfill/releases/download/3.0.8/blazor.polyfill.min.js" type="text/javascript"></script>
+	<script src="https://github.com/Daddoon/Blazor.Polyfill/releases/download/3.0.8/blazor.polyfill.min.js" type="text/javascript"></script>
 	}
 
 	@*Install-BlazorPlus*@
@@ -34,6 +35,8 @@
 		}
 	</script>
 
+	<!-- @Request.Host.Host -->
+
 </head>
 <body>
 	<div style="opacity:0.0;transition:opacity linear 2s;position:fixed;left:0;top:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
@@ -44,7 +47,14 @@
 	</div>
 
 	<app>
-		<component type="typeof(App)" render-mode="Server" />
+		@if (System.Environment.GetEnvironmentVariable("DemoServerPrerendered") =="YES")
+		{
+			<component type="typeof(App)" render-mode="ServerPrerendered" />
+		}
+		else
+		{
+			<component type="typeof(App)" render-mode="Server" />
+		}
 	</app>
 
 	<script>
@@ -61,10 +71,9 @@
 			CheckLoaded();
 			if (window.MutationObserver) {
 				var observer = new MutationObserver(function (mutations, observer) {
-					mutations.forEach(function (mutation) {
-						if (app.innerHTML != html)
-							CheckLoaded();
-					});
+					if (div.parentNode)
+						div.parentNode.removeChild(div);
+					observer.disconnect();
 				});
 				observer.observe(app, { childList: true });
 			}
